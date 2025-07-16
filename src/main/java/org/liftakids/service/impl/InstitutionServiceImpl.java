@@ -122,4 +122,12 @@ public class InstitutionServiceImpl implements InstitutionService {
         }
         return modelMapper.map(institution, InstitutionResponseDto.class);
     }
+
+    @Override
+    public String getInstitutionNameById(Long id) {
+        Institutions institution = institutionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Institution not found with id " + id));
+        return institution.getInstitutionName();
+    }
+
 }

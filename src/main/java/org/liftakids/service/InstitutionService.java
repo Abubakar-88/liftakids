@@ -17,4 +17,6 @@ public interface InstitutionService {
 
     List<InstitutionResponseDto> getInstitutionsByType(String type);
     InstitutionResponseDto getByIdOrName(String value);
+    String getInstitutionNameById(Long id);
+
 }

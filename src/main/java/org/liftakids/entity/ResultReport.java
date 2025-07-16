@@ -16,8 +16,9 @@ public class ResultReport {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String title;
-    private String reportFileUrl;
+    private String terminal;
+    private String resultFileUrl;
+    private boolean published;
     private LocalDate uploadDate;
 
     @ManyToOne

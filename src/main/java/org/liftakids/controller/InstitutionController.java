@@ -61,6 +61,11 @@ public class InstitutionController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{id}/name")
+    public ResponseEntity<String> getInstitutionNameById(@PathVariable Long id) {
+        String name = institutionService.getInstitutionNameById(id);
+        return ResponseEntity.ok(name);
+    }
 
 
 }
