@@ -1,42 +1,56 @@
 package org.liftakids.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.liftakids.entity.address.*;
+import org.liftakids.entity.address.UnionOrArea;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
 public class Institutions {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long institutionsId;
 
-    private String name;
-    private String type; // kowmi, alia, school,
-    private String email;
-    private String phone;
-    private String registrationNumber;
-    private String addressDetails; // Specific address details
+    @Column(name = "institution_name", nullable = false)
+    private String institutionName;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "villege_or_house_no_id", nullable = false)
-    private VillegeOrHouseNo villegeOrHouseNo;
-    
-    
-    private LocalDateTime updateDate;
-    
-    private String password;
-    private boolean approved = false;
+    @JoinColumn(name = "union_or_area_id", nullable = false)
+    private UnionOrArea unionOrArea;
 
-    private LocalDateTime registrationDate = LocalDateTime.now();
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private InstitutionType type;
+
+    @Email
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false, length = 15)
+    private String phone;
+
+    @Column(name = "village_or_house")
+    private String villageOrHouse;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Column(name = "registration_date")
+    private LocalDateTime registrationDate;
+
+    private Boolean approved;
+
+    private LocalDateTime updateDate;
 
     @OneToMany(mappedBy = "institution", cascade = CascadeType.ALL)
     private List<Student> students;

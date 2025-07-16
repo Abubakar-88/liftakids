@@ -18,9 +18,9 @@ import java.util.List;
 public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long studentId;
 
-    private String name;
+    private String studentName;
     private Date dob;
     private String gender;
     private String address;
@@ -33,6 +33,7 @@ public class Student {
     private String bio;
     private String photoUrl;
     private boolean sponsored; // sponsor_Id
+    private String guardianName;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "institution_id")
@@ -58,16 +59,16 @@ public class Student {
     public void setRequiredMonthlySupport(BigDecimal amount) {
         this.requiredMonthlySupport = amount;
     }
-    @Transient
-    public boolean isFullySponsored() {
-        if (requiredMonthlySupport == null || requiredMonthlySupport.compareTo(BigDecimal.ZERO) <= 0) {
-            return !currentSponsorships.isEmpty(); // If no specific amount needed, any sponsorship counts
-        }
-
-        BigDecimal totalSponsored = currentSponsorships.stream()
-                .map(Sponsorship::getMonthlyAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        return totalSponsored.compareTo(requiredMonthlySupport) >= 0;
-    }
+//    @Transient
+//    public boolean isFullySponsored() {
+//        if (requiredMonthlySupport == null || requiredMonthlySupport.compareTo(BigDecimal.ZERO) <= 0) {
+//            return !currentSponsorships.isEmpty(); // If no specific amount needed, any sponsorship counts
+//        }
+//
+//        BigDecimal totalSponsored = currentSponsorships.stream()
+//                .map(Sponsorship::getMonthlyAmount)
+//                .reduce(BigDecimal.ZERO, BigDecimal::add);
+//
+//        return totalSponsored.compareTo(requiredMonthlySupport) >= 0;
+//    }
 }

@@ -17,13 +17,13 @@ import java.util.List;
 public class Thanas {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
+    private Long thanaId;
+    private String thanaName;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "district_id", nullable = false)
     @JsonIgnore
-    private Districts districts;
+    private Districts district;
 
     @OneToMany(mappedBy = "thana", cascade = CascadeType.ALL)
     private List<UnionOrArea> unionOrAreas;

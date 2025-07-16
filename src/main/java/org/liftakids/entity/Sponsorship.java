@@ -13,32 +13,36 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "sponsorships")
+@Table(name = "sponsor")
 public class Sponsorship {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long sponsorId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "donor_id", nullable = false)
     private Donor donor;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 
-    private LocalDate startDate;
-    private LocalDate endDate;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_interval", nullable = false)
+    private PaymentInterval paymentInterval;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", nullable = false)
+    private PaymentMethod paymentMethod;
+
+    @Column(name = "amount_per_month", nullable = false, precision = 10, scale = 2)
+    private BigDecimal amountPerMonth;
+
+    @Column(name = "paid_up_to")
+    private LocalDate paidUpTo;
 
     @Enumerated(EnumType.STRING)
     private SponsorshipStatus status;
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal monthlyAmount;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private PaymentMethod paymentMethod;
 
     public boolean isActive() {
         return status == SponsorshipStatus.ACTIVE;
