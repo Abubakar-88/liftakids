@@ -1,11 +1,15 @@
 package org.liftakids.service.impl;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.liftakids.dto.student.StudentRequestDto;
 import org.liftakids.dto.student.StudentResponseDto;
+import org.liftakids.dto.student.StudentUpdateRequestDTO;
+import org.liftakids.entity.FinancialRank;
 import org.liftakids.entity.Institutions;
 import org.liftakids.entity.Student;
 
+import org.liftakids.exception.ResourceNotFoundException;
 import org.liftakids.repositories.InstitutionRepository;
 import org.liftakids.repositories.StudentRepository;
 import org.liftakids.service.StudentService;
@@ -46,6 +50,28 @@ public class StudentServiceImpl implements StudentService {
 
         return response;
     }
+    @Override
+    @Transactional
+    public StudentResponseDto updateStudent(Long studentId, StudentUpdateRequestDTO updateRequest) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
+
+        // Update student fields
+        student.setStudentName(updateRequest.studentName());
+        student.setContactNumber(updateRequest.contactNumber());
+        student.setDob(updateRequest.dob());
+        student.setBio(updateRequest.bio());
+        student.setFinancial_rank(FinancialRank.valueOf(updateRequest.financialRank()));
+        student.setRequiredMonthlySupport(updateRequest.requiredMonthlySupport());
+        student.setAddress(updateRequest.address());
+        student.setGuardianName(updateRequest.guardianName());
+
+        Student updatedStudent = studentRepository.save(student);
+        return modelMapper.map(updatedStudent, StudentResponseDto.class);
+    }
+
+
+
 
     @Override
     public StudentResponseDto getStudentById(Long id) {

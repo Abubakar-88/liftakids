@@ -22,7 +22,7 @@ public class ResultReport {
     private LocalDate uploadDate;
 
     @ManyToOne
-    @JoinColumn(name = "student_id")
+    @JoinColumn(name = "student_id", referencedColumnName = "studentId")
     private Student student;
 
 

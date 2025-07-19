@@ -2,6 +2,7 @@ package org.liftakids.service.impl;
 
 import org.liftakids.entity.ResultReport;
 import org.liftakids.entity.Student;
+import org.liftakids.exception.StudentNotFoundException;
 import org.liftakids.repositories.ResultReportRepository;
 import org.liftakids.repositories.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ public class ResultReportService {
 
     public ResultReport uploadResult(Long studentId, String terminal, MultipartFile file) {
         Student student = studentRepo.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+                .orElseThrow(() -> new StudentNotFoundException("Student not found with ID: " + studentId));
 
         String fileUrl = saveFile(file); // Implement file saving logic
 
@@ -34,8 +35,8 @@ public class ResultReportService {
         return resultRepo.save(report);
     }
 
-    public ResultReport publishResult(Long reportId) {
-        ResultReport report = resultRepo.findById(reportId)
+    public ResultReport publishResult(Long id) {
+        ResultReport report = resultRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Report not found"));
         report.setPublished(true);
         return resultRepo.save(report);
