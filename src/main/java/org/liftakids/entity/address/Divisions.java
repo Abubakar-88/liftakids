@@ -16,7 +16,7 @@ import java.util.List;
 public class Divisions {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long divisionId;
 
     @Column(unique = true, nullable = false, length = 15)
     private String divisionName;
