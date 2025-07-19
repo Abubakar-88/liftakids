@@ -77,4 +77,47 @@ public class StudentServiceImpl implements StudentService {
                 java.time.LocalDate.now()
         ).getYears();
     }
+
+    @Override
+    public StudentResponseDto getStudentByNameOrPhone(String value) {
+        Student student = studentRepository.findByStudentNameOrContactNumber(value, value)
+                .orElseThrow(() -> new RuntimeException("Student not found by name or phone"));
+
+        StudentResponseDto dto = modelMapper.map(student, StudentResponseDto.class);
+        dto.setInstitutionId(student.getInstitution().getInstitutionsId());
+        return dto;
+    }
+
+    @Override
+    public StudentResponseDto updateStudent(Long id, StudentRequestDto requestDto) {
+        Student existing = studentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
+
+        int age = calculateAge(requestDto.getDob());
+        if (age <= 4) {
+            throw new RuntimeException("Student must be older than 4 years.");
+        }
+
+        modelMapper.map(requestDto, existing);
+
+        Institutions institution = institutionRepository.findById(requestDto.getInstitutionId())
+                .orElseThrow(() -> new RuntimeException("Institution not found"));
+
+        existing.setInstitution(institution);
+
+        Student updated = studentRepository.save(existing);
+
+        StudentResponseDto dto = modelMapper.map(updated, StudentResponseDto.class);
+        dto.setInstitutionId(institution.getInstitutionsId());
+        return dto;
+    }
+
+    @Override
+    public void deleteStudent(Long id) {
+        if (!studentRepository.existsById(id)) {
+            throw new RuntimeException("Student not found with id: " + id);
+        }
+        studentRepository.deleteById(id);
+    }
+
 }

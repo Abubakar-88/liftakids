@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ResultReportRepository extends JpaRepository<ResultReport, Long> {
-    List<ResultReport> findByStudentId(Long studentId);
+    List<ResultReport> findByStudent_StudentId(Long studentId);
 }

@@ -32,4 +32,24 @@ public class StudentController {
     public ResponseEntity<List<StudentResponseDto>> getAllStudents() {
         return ResponseEntity.ok(studentService.getAllStudents());
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<StudentResponseDto> getStudentByNameOrPhone(@RequestParam String value) {
+        return ResponseEntity.ok(studentService.getStudentByNameOrPhone(value));
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<StudentResponseDto> updateStudent(
+            @PathVariable Long id,
+            @Valid @RequestBody StudentRequestDto requestDto) {
+        return ResponseEntity.ok(studentService.updateStudent(id, requestDto));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
+        studentService.deleteStudent(id);
+        return ResponseEntity.noContent().build();
+    }
+
+
+
 }
