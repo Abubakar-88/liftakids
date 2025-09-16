@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -16,14 +17,17 @@ public class ResultReport {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String exam;
     private String terminal;
-    private String resultFileUrl;
-    private boolean published;
+    private LocalDate examDate;
     private LocalDate uploadDate;
 
     @ManyToOne
-    @JoinColumn(name = "student_id", referencedColumnName = "studentId")
+    @JoinColumn(name = "student_id")
     private Student student;
+
+    @OneToMany(mappedBy = "resultReport", cascade = CascadeType.ALL)
+    private List<SubjectMark> subjectMarks;
 
 
 }

@@ -2,12 +2,16 @@ package org.liftakids.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.liftakids.dto.district.DistrictDto;
+import org.liftakids.dto.district.DistrictResponseDTO;
+import org.liftakids.dto.thana.ThanaResponseDTO;
 import org.liftakids.entity.address.Districts;
 import org.liftakids.entity.address.Divisions;
 import org.liftakids.repositories.DistrictRepository;
 import org.liftakids.repositories.DivisionRepository;
 import org.liftakids.service.DistrictService;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -70,5 +74,19 @@ public class DistrictServiceImpl implements DistrictService {
         }).toList();
     }
 
+    @Override
+    public List<DistrictResponseDTO> getDistrictsByDivisionId(Long divisionId) {
+        // Now using the correct repository method
+        List<Districts> districts = districtRepository.findByDivisionId(divisionId);
+        return districts.stream()
+                .map(district -> modelMapper.map(district, DistrictResponseDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<DistrictResponseDTO> getAllDistricts(Pageable pageable) {
+        Page<Districts> districts = districtRepository.findAll(pageable);
+        return districts.map(district -> modelMapper.map(district, DistrictResponseDTO.class));
+    }
 
 }

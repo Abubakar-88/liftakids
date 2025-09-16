@@ -4,9 +4,12 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.Where;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,6 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 public class Student {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long studentId;
@@ -32,7 +36,8 @@ public class Student {
 
     private String bio;
     private String photoUrl;
-    private boolean sponsored; // sponsor_Id
+
+
     private String guardianName;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -43,15 +48,71 @@ public class Student {
     private List<ResultReport> resultReports;
 
 
+    @Column(name = "is_sponsored", nullable = false)
+    private boolean isSponsored = false;
+
     @OneToMany(mappedBy = "student")
-    @Where(clause = "status = 'ACTIVE'") // Filter only active sponsorships
+    @Where(clause = "status = 'COMPLETED'")
     private List<Sponsorship> currentSponsorships = new ArrayList<>();
 
     @Column(name = "required_monthly_support", precision = 10, scale = 2)
     private BigDecimal requiredMonthlySupport;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private StudentStatus status = StudentStatus.ACTIVE;
+
+    @CreationTimestamp
+    @Column(name = "created_date", updatable = false)
+    private LocalDateTime createdDate;
+
+    @UpdateTimestamp
+    @Column(name = "last_updated_date")
+    private LocalDateTime lastUpdatedDate;
+
+    @Transient
+    public BigDecimal getTotalSponsoredAmount() {
+        return currentSponsorships.stream()
+                .map(Sponsorship::getTotalPaidAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Transient
+    public boolean isFullySponsored() {
+        if (requiredMonthlySupport == null || requiredMonthlySupport.compareTo(BigDecimal.ZERO) <= 0) {
+            return isSponsored();
+        }
+        return getTotalSponsoredAmount().compareTo(requiredMonthlySupport) >= 0;
+    }
 
 
+    public boolean isSponsored() {
+        return this.isSponsored;
+    }
+
+    // Add synchronization methods
+    public void addSponsorship(Sponsorship sponsorship) {
+        if (!this.currentSponsorships.contains(sponsorship)) {
+            this.currentSponsorships.add(sponsorship);
+            this.isSponsored = true;
+        }
+    }
+
+    public void removeSponsorship(Sponsorship sponsorship) {
+        this.currentSponsorships.remove(sponsorship);
+        this.isSponsored = !this.currentSponsorships.isEmpty();
+    }
+
+    @PostLoad
+    public void updateSponsorshipStatus() {
+        boolean newStatus = !this.currentSponsorships.isEmpty();
+        if (this.isSponsored != newStatus) {
+            this.isSponsored = newStatus;
+        }
+    }
+    public void refreshSponsorshipStatus() {
+        this.isSponsored = !this.currentSponsorships.isEmpty();
+    }
     public BigDecimal getRequiredMonthlySupport() {
         return requiredMonthlySupport != null ? requiredMonthlySupport : BigDecimal.ZERO;
     }
@@ -66,7 +127,7 @@ public class Student {
 //        }
 //
 //        BigDecimal totalSponsored = currentSponsorships.stream()
-//                .map(Sponsorship::getMonthlyAmount)
+//                .map(Sponsorship::getTotalPaidAmount)
 //                .reduce(BigDecimal.ZERO, BigDecimal::add);
 //
 //        return totalSponsored.compareTo(requiredMonthlySupport) >= 0;

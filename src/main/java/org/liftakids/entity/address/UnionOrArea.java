@@ -17,8 +17,8 @@ import java.util.List;
 public class UnionOrArea {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long uninorOrAreaId;
-    private String uninorOrAreaName;
+    private Long unionOrAreaId;
+    private String unionOrAreaName;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "thana_id",nullable = false)

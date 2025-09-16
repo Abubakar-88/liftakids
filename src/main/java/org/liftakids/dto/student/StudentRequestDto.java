@@ -33,13 +33,12 @@ public class StudentRequestDto {
     private String bio;
 
     private String photoUrl;
-    private boolean sponsored;
 
     @NotBlank(message = "Guardian name is required")
     private String guardianName;
 
-    @NotNull(message = "Institution ID is required")
-    private Long institutionId;
+    @NotNull(message = "Institutions ID is required")
+    private Long institutionsId;
 
     @DecimalMin(value = "0.0", inclusive = true, message = "Required monthly support must be non-negative")
     private BigDecimal requiredMonthlySupport;

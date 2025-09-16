@@ -29,7 +29,7 @@ public class Institutions {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "villege_or_house_no_id", nullable = false)
-    private VillegeOrHouseNo villegeOrHouseNo;
+    private String villegeOrHouseNo;
     
     
     private LocalDateTime updateDate;

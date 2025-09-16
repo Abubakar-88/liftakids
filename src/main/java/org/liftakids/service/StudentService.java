@@ -3,6 +3,8 @@ package org.liftakids.service;
 import org.liftakids.dto.student.StudentRequestDto;
 import org.liftakids.dto.student.StudentResponseDto;
 import org.liftakids.dto.student.StudentUpdateRequestDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -11,4 +13,16 @@ public interface StudentService {
     StudentResponseDto updateStudent(Long studentId, StudentUpdateRequestDTO updateRequest);
     StudentResponseDto getStudentById(Long id);
     List<StudentResponseDto> getAllStudents();
+    List<StudentResponseDto> getStudentsByInstitution(Long institutionId);
+    Page<StudentResponseDto> getStudentsByInstitution(Long institutionId, Pageable pageable);
+    List<StudentResponseDto> searchStudentsByInstitution(
+            Long institutionId,
+            String studentName,
+            String guardianName,
+            String contactNumber);
+    List<StudentResponseDto> searchStudents(String studentName, String guardianName, String gender, String contactNumber);
+    Page<StudentResponseDto> getAllStudents(Pageable pageable);
+    void deleteStudent(Long studentId);
+    List<StudentResponseDto> getTop3UnsponsoredUrgentStudents();
+    //List<StudentResponseDto> getUnsponsoredUrgentStudents(int limit);
 }

@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UnionOrAreaDto {
-    private Long unionOrAreaId;
-    private String unionOrAreaName;
     private Long thanaId;
+    private String unionOrAreaName;
+
 }

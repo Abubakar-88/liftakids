@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Where;
@@ -26,6 +28,10 @@ public class Donor {
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters long")
+    @Column(nullable = false)
+    private String password;
     @NotBlank(message = "Phone number is required")
     @Pattern(
             regexp = "^(\\+\\d{1,3}[- ]?)?\\d{7,15}$",
@@ -37,16 +43,15 @@ public class Donor {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private DonorType type; // INDIVIDUAL, ORGANIZATION
+    private DonorType type;
     private boolean status = true;
+
+    @OneToMany(mappedBy = "donor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Sponsorship> sponsorships = new ArrayList<>();
 
     @OneToMany(mappedBy = "donor", cascade = CascadeType.ALL, orphanRemoval = true)
     @Where(clause = "status = 'ACTIVE'")
     private List<Sponsorship> activeSponsorships = new ArrayList<>();
-
-    public boolean canSponsorMoreStudents(int maxAllowed) {
-        return activeSponsorships.size() < maxAllowed;
-    }
 
 
 

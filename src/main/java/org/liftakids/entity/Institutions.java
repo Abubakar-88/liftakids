@@ -6,6 +6,9 @@ import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.liftakids.entity.address.Districts;
+import org.liftakids.entity.address.Divisions;
+import org.liftakids.entity.address.Thanas;
 import org.liftakids.entity.address.UnionOrArea;
 
 import java.time.LocalDateTime;
@@ -23,6 +26,19 @@ public class Institutions {
 
     @Column(name = "institution_name", nullable = false)
     private String institutionName;
+
+    // Location hierarchy
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "division_id", nullable = false)
+    private Divisions division;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "district_id", nullable = false)
+    private Districts district;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "thana_id", nullable = false)
+    private Thanas thana;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "union_or_area_id", nullable = false)
@@ -53,6 +69,7 @@ public class Institutions {
     private LocalDateTime updateDate;
 
     @OneToMany(mappedBy = "institution", cascade = CascadeType.ALL)
+    @JsonBackReference
     private List<Student> students;
 
 }

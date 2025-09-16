@@ -1,5 +1,6 @@
 package org.liftakids.dto.institute;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,9 @@ import java.time.LocalDateTime;
 public class InstitutionResponseDto {
     private Long institutionsId;
     private String institutionName;
+    private Long divisionId;
+    private Long districtId;
+    private Long thanaId;
     private Long unionOrAreaId;
     private InstitutionType type;
     private String email;

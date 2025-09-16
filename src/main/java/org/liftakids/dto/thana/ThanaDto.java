@@ -8,7 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ThanaDto {
-    private Long thanaId;
     private String thanaName;
     private Long districtId;
+
+
 }

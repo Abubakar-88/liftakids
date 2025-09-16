@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface ResultReportRepository extends JpaRepository<ResultReport, Long> {
-    @Query("SELECT r FROM ResultReport r WHERE r.student.studentId = :studentId")
-    List<ResultReport> findByStudentId(@Param("studentId") Long studentId);
+//    @Query("SELECT r FROM ResultReport r WHERE r.student.studentId = :studentId")
+//    List<ResultReport> findByStudentId(@Param("studentId") Long studentId);
+     List<ResultReport> findByStudent_StudentId(Long studentId);
 }

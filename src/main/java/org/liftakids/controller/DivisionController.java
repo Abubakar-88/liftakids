@@ -1,7 +1,9 @@
 package org.liftakids.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.liftakids.dto.divison.DivisionDto;
+import org.liftakids.dto.divison.DivisionResponseDTO;
 import org.liftakids.service.DivisionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +23,7 @@ public class DivisionController {
     }
 
     @GetMapping
-    public ResponseEntity<List<DivisionDto>> getAll() {
+    public ResponseEntity<List<DivisionResponseDTO>> getAll() {
         return ResponseEntity.ok(divisionService.getAll());
     }
 
@@ -29,5 +31,10 @@ public class DivisionController {
     public ResponseEntity<List<DivisionDto>> createDivisions(@RequestBody List<DivisionDto> divisionDtos) {
         return ResponseEntity.ok(divisionService.createAll(divisionDtos));
     }
-
+    @PutMapping("/{divisionId}")
+    public ResponseEntity<DivisionResponseDTO> updateDivision(
+            @PathVariable Long divisionId, @Valid @RequestBody DivisionDto divisionRequestDTO) {
+        DivisionResponseDTO updatedDivision = divisionService.updateDivision(divisionId, divisionRequestDTO);
+        return new ResponseEntity<>(updatedDivision, HttpStatus.OK);
+    }
 }

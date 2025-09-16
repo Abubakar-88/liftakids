@@ -8,6 +8,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DivisionDto {
-    private Long divisionId;
     private String divisionName;
 }

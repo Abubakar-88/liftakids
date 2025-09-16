@@ -1,5 +1,10 @@
 package org.liftakids.entity;
 
 public enum SponsorshipStatus {
-    ACTIVE, COMPLETED, CANCELLED
+    PENDING_PAYMENT,
+    ACTIVE,
+    PAUSED,
+    COMPLETED,
+    CANCELLED,
+    EXPIRED
 }

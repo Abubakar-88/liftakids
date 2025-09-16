@@ -13,7 +13,7 @@ public record StudentUpdateRequestDTO(
         @NotBlank String contactNumber,
         @NotNull Date dob,
         String bio,
-        @NotBlank String financialRank,
+        @NotBlank String financial_rank,
         @PositiveOrZero BigDecimal requiredMonthlySupport,
         @NotBlank String address,
         @NotBlank String guardianName

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.liftakids.entity.Institutions;
 
 import java.util.List;
 
@@ -23,4 +24,6 @@ public class Divisions {
 
     @OneToMany(mappedBy = "division", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Districts> districts;
+
+
 }

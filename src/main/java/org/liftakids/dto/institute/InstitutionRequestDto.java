@@ -18,6 +18,12 @@ public class InstitutionRequestDto {
     private String institutionName;
 
     @NotNull
+    private Long divisionId;
+    @NotNull
+    private Long districtId;
+    @NotNull
+    private Long thanaId;
+    @NotNull
     private Long unionOrAreaId;
 
     @NotNull

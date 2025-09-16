@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DistrictDto {
     private Long districtId;
-    private String districtName;
     private Long divisionId;
+    private String districtName;
+
 }
