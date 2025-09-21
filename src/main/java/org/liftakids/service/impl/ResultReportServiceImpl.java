@@ -40,6 +40,7 @@ public class ResultReportServiceImpl implements ResultReportService {
         String exam = extractValue(text, "Exam:");
         String term = extractValue(text, "Term:");
         LocalDate date = LocalDate.parse(extractValue(text, "Date:"));
+        String studentClass = extractValue(text, "Class:");
 
         List<SubjectMark> subjectMarks = extractSubjectMarks(text);
 
@@ -47,6 +48,7 @@ public class ResultReportServiceImpl implements ResultReportService {
         report.setExam(exam);
         report.setTerminal(term);
         report.setExamDate(date);
+        report.setStudentClass(studentClass);
         report.setStudent(student);
         report.setUploadDate(LocalDate.now());
 
@@ -78,7 +80,7 @@ public class ResultReportServiceImpl implements ResultReportService {
             file.transferTo(tempFile);
 
             Tesseract tesseract = new Tesseract();
-            tesseract.setDatapath("/src/main/resources/tessdata");
+            tesseract.setDatapath("src/main/resources/tessdata");
             return tesseract.doOCR(tempFile);
         } catch (IOException | TesseractException e) {
             throw new RuntimeException("Failed to extract text", e);
@@ -121,6 +123,7 @@ public class ResultReportServiceImpl implements ResultReportService {
         dto.setExamName(report.getExam());
         dto.setTerm(report.getTerminal());
         dto.setExamDate(report.getExamDate());
+        dto.setStudentClass(report.getStudentClass());
         dto.setStudentId(report.getStudent().getStudentId());
         dto.setStudentName(report.getStudent().getStudentName());
 

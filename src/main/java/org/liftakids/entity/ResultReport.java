@@ -17,6 +17,9 @@ public class ResultReport {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "class")
+    private String studentClass;
+
     private String exam;
     private String terminal;
     private LocalDate examDate;

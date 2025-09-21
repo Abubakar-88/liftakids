@@ -7,6 +7,7 @@ import java.util.List;
 
 @Data
 public class ResultReportResponseDto {
+    private String studentClass;
     private String examName;
     private String term;
     private LocalDate examDate;
