@@ -11,6 +11,10 @@ import org.liftakids.repositories.PaymentRepository;
 import org.liftakids.repositories.SponsorshipRepository;
 import org.liftakids.service.PaymentService;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -140,7 +144,7 @@ public class PaymentServiceImpl implements PaymentService {
         LocalDate adjustedEndDate = endDate.withDayOfMonth(endDate.lengthOfMonth());
 
         // Validate dates are within sponsorship period (using adjusted dates)
-        if (adjustedStartDate.isBefore(sponsorship.getStartDate())) {
+        if (adjustedStartDate.isBefore(sponsorship.getSponsorStartDate())) {
             throw new BusinessException("Cannot pay for dates before sponsorship start");
         }
 
@@ -209,6 +213,30 @@ public class PaymentServiceImpl implements PaymentService {
 
         return payment;
     }
+    public List<PaymentResponseDto> getPaymentsByDonor(Long donorId) {
+        List<Payment> payments = paymentRepository.findByDonorId(donorId);
+
+        if (payments.isEmpty()) {
+            throw new ResourceNotFoundException("No payments found for donor with id: " + donorId);
+        }
+
+        return payments.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<PaymentResponseDto> getPaymentsByDonor(Long donorId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Payment> payments = paymentRepository.findByDonorId(donorId, pageable);
+
+        if (payments.isEmpty()) {
+            throw new ResourceNotFoundException("No payments found for donor with id: " + donorId);
+        }
+
+        return payments.map(this::convertToDto);
+    }
+
 
     @Override
     @Transactional
@@ -239,7 +267,7 @@ public class PaymentServiceImpl implements PaymentService {
         // Set dates properly
         dto.setStartDate(payment.getStartDate());
         dto.setEndDate(payment.getEndDate());
-
+        dto.setTransactionId(payment.getTransactionId());
         // Set formatted period string
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM yyyy");
         dto.setPaidPeriod(String.format("%s - %s",

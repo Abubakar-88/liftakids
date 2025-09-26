@@ -75,6 +75,7 @@ public class SponsorshipServiceImpl implements SponsorshipService {
         sponsorship.setStatus(SponsorshipStatus.PENDING_PAYMENT);
         sponsorship.setPaymentMethod(request.getPaymentMethod());
         sponsorship.setTotalPaidAmount(BigDecimal.ZERO);
+        sponsorship.setSponsorStartDate(LocalDate.now());
         sponsorship.setLastPaymentDate(null);
         sponsorship.setPaidUpTo(null);
         sponsorship.setPayments(new ArrayList<>());
@@ -151,6 +152,8 @@ private SponsorshipResponseDto sponsorConvertToDto(Sponsorship sponsorship) {
             .photoUrl(sponsorship.getStudent().getPhotoUrl())
             .financial_rank(sponsorship.getStudent().getFinancial_rank())
             .institutionName(student.getInstitution().getInstitutionName())
+            .institutionTeacherName(student.getInstitution().getTeacherName())
+            .institutionTeacherDesignation(student.getInstitution().getTeacherDesignation())
             .monthlyAmount(sponsorship.getMonthlyAmount())
             .totalAmount(sponsorship.getTotalAmount())
             .paidUpTo(sponsorship.getPaidUpTo())

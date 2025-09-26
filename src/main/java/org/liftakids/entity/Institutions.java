@@ -48,6 +48,12 @@ public class Institutions {
     @Column(nullable = false)
     private InstitutionType type;
 
+    @Column(name ="teacher_name" ,nullable = false)
+    private String teacherName;
+
+    @Column(name = "teacher_designation",nullable = false)
+    private String TeacherDesignation;
+
     @Email
     @Column(nullable = false, unique = true)
     private String email;

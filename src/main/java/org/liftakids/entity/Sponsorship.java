@@ -33,6 +33,10 @@ public class Sponsorship {
     @Column(name = "monthly_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal monthlyAmount;
 
+    @Column(name = "sponsor_start_date", nullable = false)
+    @Temporal(TemporalType.DATE)
+    private LocalDate sponsorStartDate;
+
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
 
@@ -88,9 +92,15 @@ public class Sponsorship {
             this.student.removeSponsorship(this);
         }
     }
-
-    @PreUpdate
     @PrePersist
+    protected void prePersist() {
+        // Set sponsor start date to current date if not already set
+        if (this.sponsorStartDate == null) {
+            this.sponsorStartDate = LocalDate.now();
+        }
+
+    }
+    @PreUpdate
     private void handleUpdateOperations() {
         // 1. Handle student status updates
         if (this.student != null) {

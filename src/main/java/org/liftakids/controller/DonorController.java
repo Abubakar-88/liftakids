@@ -1,10 +1,7 @@
 package org.liftakids.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.liftakids.dto.donor.DonorRequestDto;
-import org.liftakids.dto.donor.DonorResponseDto;
-import org.liftakids.dto.donor.LoginRequestDto;
-import org.liftakids.dto.donor.LoginResponseDto;
+import org.liftakids.dto.donor.*;
 import org.liftakids.dto.sponsorship.SponsorshipResponseDto;
 import org.liftakids.service.DonorService;
 import org.liftakids.service.SponsorshipService;
@@ -30,11 +27,20 @@ public class DonorController {
     public ResponseEntity<DonorResponseDto> createDonor(@Valid @RequestBody DonorRequestDto requestDto) {
         return new ResponseEntity<>(donorService.createDonor(requestDto), HttpStatus.CREATED);
     }
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> loginDonor(@Valid @RequestBody LoginRequestDto loginRequest) {
         LoginResponseDto response = donorService.loginDonor(loginRequest);
         return ResponseEntity.ok(response);
     }
+
+    @PutMapping("/{id}/change-password")
+    public ResponseEntity<PasswordResetResponseDto> changePassword(
+            @PathVariable Long id,
+            @Valid @RequestBody PasswordChangeRequestDto request) {
+        return ResponseEntity.ok(donorService.changePassword(id, request));
+    }
+
     @GetMapping
     public ResponseEntity<List<DonorResponseDto>> getAllDonors() {
         return ResponseEntity.ok(donorService.getAllDonors());
@@ -44,7 +50,12 @@ public class DonorController {
     public ResponseEntity<DonorResponseDto> getDonorById(@PathVariable Long id) {
         return ResponseEntity.ok(donorService.getDonorById(id));
     }
-
+    @PutMapping("/update/{id}")
+    public ResponseEntity<DonorResponseDto> updateDonor(
+            @PathVariable Long id,
+            @Valid @RequestBody DonorUpdateRequestDto updateRequestDto) {
+        return ResponseEntity.ok(donorService.updateDonor(id, updateRequestDto));
+    }
     @GetMapping("/search")
     public ResponseEntity<List<DonorResponseDto>> searchDonorsSimple(@RequestParam String searchTerm) {
         return ResponseEntity.ok(donorService.searchDonors(searchTerm));

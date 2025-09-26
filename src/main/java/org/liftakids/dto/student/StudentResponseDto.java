@@ -2,6 +2,7 @@ package org.liftakids.dto.student;
 
 import lombok.Builder;
 import lombok.Data;
+import org.liftakids.dto.institute.InstitutionResponseDto;
 import org.liftakids.entity.SponsorshipStatus;
 
 import java.math.BigDecimal;
@@ -29,6 +30,7 @@ public class StudentResponseDto {
     private boolean fullySponsored;
     private BigDecimal sponsoredAmount;
     private List<SponsorInfoDto> sponsors;
+    private InstitutionResponseDto institutions;
 
     @Data
     @Builder

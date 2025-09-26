@@ -2,6 +2,7 @@ package org.liftakids.service.impl;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.liftakids.dto.institute.InstitutionResponseDto;
 import org.liftakids.dto.student.StudentRequestDto;
 import org.liftakids.dto.student.StudentResponseDto;
 import org.liftakids.dto.student.StudentUpdateRequestDTO;
@@ -88,6 +89,9 @@ public class StudentServiceImpl implements StudentService {
         response.setSponsored(student.isSponsored());
         response.setInstitutionPhone(student.getInstitution().getPhone());
         response.setInstitutionName(student.getInstitution().getInstitutionName());
+        // Also set the complete InstitutionResponseDto
+        InstitutionResponseDto institutionDto = modelMapper.map(student.getInstitution(), InstitutionResponseDto.class);
+        response.setInstitutions(institutionDto);
       //  response.setFullySponsored(student.isFullySponsored());
         // Calculate sponsorship details
         BigDecimal required = student.getRequiredMonthlySupport() != null ?
@@ -108,6 +112,10 @@ public class StudentServiceImpl implements StudentService {
                     StudentResponseDto dto = modelMapper.map(student, StudentResponseDto.class);
                     dto.setInstitutionsId(student.getInstitution().getInstitutionsId());
                     dto.setSponsored(student.isSponsored());
+                    // Also set the complete InstitutionResponseDto
+                    InstitutionResponseDto institutionDto = modelMapper.map(student.getInstitution(), InstitutionResponseDto.class);
+                    dto.setInstitutions(institutionDto);
+
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -128,6 +136,9 @@ public class StudentServiceImpl implements StudentService {
             StudentResponseDto dto = modelMapper.map(student, StudentResponseDto.class);
             dto.setInstitutionPhone(student.getInstitution().getPhone());
             dto.setInstitutionName(student.getInstitution().getInstitutionName());
+            // Also set the complete InstitutionResponseDto
+            InstitutionResponseDto institutionDto = modelMapper.map(student.getInstitution(), InstitutionResponseDto.class);
+            dto.setInstitutions(institutionDto);
             // Handle institution data
             if (student.getInstitution() != null) {
                 dto.setInstitutionsId(student.getInstitution().getInstitutionsId());
@@ -222,6 +233,11 @@ public class StudentServiceImpl implements StudentService {
         // Set institution information
         dto.setInstitutionsId(student.getInstitution().getInstitutionsId());
         dto.setInstitutionName(student.getInstitution().getInstitutionName());
+
+        // Also set the complete InstitutionResponseDto
+        InstitutionResponseDto institutionDto = modelMapper.map(student.getInstitution(), InstitutionResponseDto.class);
+        dto.setInstitutions(institutionDto);
+
 
         // Calculate sponsorship details
         BigDecimal totalSponsoredAmount = BigDecimal.ZERO;

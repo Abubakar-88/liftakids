@@ -25,7 +25,7 @@ public class PaymentResponseDto {
     private PaymentMethod paymentMethod;
     private PaymentStatus status;
     private String cardLastFour;  // Last 4 digits if credit card
-
+    private String transactionId;
     // Add these if needed
     private LocalDate startDate;
     private LocalDate endDate;

@@ -50,7 +50,9 @@ public class ResultReportServiceImpl implements ResultReportService {
         report.setExamDate(date);
         report.setStudentClass(studentClass);
         report.setStudent(student);
+        report.setPublished(false);
         report.setUploadDate(LocalDate.now());
+
 
         for (SubjectMark sm : subjectMarks) {
             sm.setResultReport(report);
@@ -122,6 +124,7 @@ public class ResultReportServiceImpl implements ResultReportService {
         ResultReportResponseDto dto = new ResultReportResponseDto();
         dto.setExamName(report.getExam());
         dto.setTerm(report.getTerminal());
+        dto.setStudentClass(report.getStudentClass());
         dto.setExamDate(report.getExamDate());
         dto.setStudentClass(report.getStudentClass());
         dto.setStudentId(report.getStudent().getStudentId());

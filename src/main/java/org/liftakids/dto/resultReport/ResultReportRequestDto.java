@@ -7,4 +7,5 @@ import org.springframework.web.multipart.MultipartFile;
 public class ResultReportRequestDto {
     private Long studentId;
     private MultipartFile resultImage;
+    private Boolean published = false;
 }

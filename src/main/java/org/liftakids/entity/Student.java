@@ -30,6 +30,9 @@ public class Student {
     private String address;
     private String contactNumber;
 
+    @Column(name = "class_name")
+    private String className;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private FinancialRank financial_rank;

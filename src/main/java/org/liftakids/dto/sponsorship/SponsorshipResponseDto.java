@@ -26,6 +26,8 @@ public class SponsorshipResponseDto {
     private String photoUrl;
     private String bio;
     private String institutionName;
+    private String institutionTeacherName;
+    private String institutionTeacherDesignation;
     private FinancialRank financial_rank;
     private BigDecimal monthlyAmount;
     private BigDecimal totalAmount;

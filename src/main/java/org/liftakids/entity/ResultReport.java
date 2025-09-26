@@ -20,6 +20,9 @@ public class ResultReport {
     @Column(name = "class_name")
     private String studentClass;
 
+    @Column(name = "published", nullable = false)
+    private Boolean published = false;
+
     private String exam;
     private String terminal;
     private LocalDate examDate;

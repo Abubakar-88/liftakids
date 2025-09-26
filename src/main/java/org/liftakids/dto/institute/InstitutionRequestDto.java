@@ -1,5 +1,6 @@
 package org.liftakids.dto.institute;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -28,6 +29,12 @@ public class InstitutionRequestDto {
 
     @NotNull
     private InstitutionType type;
+
+    @NotBlank
+    private String teacherName;
+
+    @NotBlank
+    private String TeacherDesignation;
 
     @NotBlank
     @Email

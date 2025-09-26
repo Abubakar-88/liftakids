@@ -1,5 +1,6 @@
 package org.liftakids.dto.institute;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,6 +20,8 @@ public class InstitutionResponseDto {
     private Long thanaId;
     private Long unionOrAreaId;
     private InstitutionType type;
+    private String teacherName;
+    private String TeacherDesignation;
     private String email;
     private String phone;
     private String villageOrHouse;

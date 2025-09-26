@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.liftakids.dto.sponsorship.*;
 import org.liftakids.entity.Sponsorship;
+import org.liftakids.exception.ResourceNotFoundException;
 import org.liftakids.repositories.SponsorshipRepository;
 import org.liftakids.service.PaymentService;
 import org.liftakids.service.SponsorshipService;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -95,7 +97,35 @@ public class SponsorshipController {
 //        return paymentService.getPaymentsBySponsorship(sponsorshipId);
 //    }
 
+    @GetMapping("/donor/{donorId}/payments")
+    public ResponseEntity<List<PaymentResponseDto>> getPaymentsByDonor(
+            @PathVariable Long donorId,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
+        try {
+            List<PaymentResponseDto> payments;
 
+            if (page != null && size != null) {
+                // Paginated response
+                Page<PaymentResponseDto> paymentPage = paymentService.getPaymentsByDonor(donorId, page, size);
+                payments = paymentPage.getContent();
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.add("X-Total-Count", String.valueOf(paymentPage.getTotalElements()));
+                headers.add("X-Total-Pages", String.valueOf(paymentPage.getTotalPages()));
+
+                return ResponseEntity.ok().headers(headers).body(payments);
+            } else {
+                // All payments without pagination
+                payments = paymentService.getPaymentsByDonor(donorId);
+                return ResponseEntity.ok(payments);
+            }
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
     @GetMapping("/overdue")
     public ResponseEntity<List<SponsorshipResponseDto>> getOverdueSponsorships() {
         return ResponseEntity.ok(sponsorshipService.getOverdueSponsorships());
