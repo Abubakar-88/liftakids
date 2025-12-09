@@ -10,19 +10,23 @@ import org.liftakids.entity.*;
 
 import org.liftakids.exception.ResourceNotFoundException;
 import org.liftakids.repositories.InstitutionRepository;
+import org.liftakids.repositories.SponsorshipRepository;
 import org.liftakids.repositories.StudentRepository;
+import org.liftakids.service.S3Service;
 import org.liftakids.service.StudentService;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,9 +36,12 @@ public class StudentServiceImpl implements StudentService {
     private final StudentRepository studentRepository;
     private final InstitutionRepository institutionRepository;
     private final ModelMapper modelMapper;
+    private final S3Service s3Service;
+    private final SponsorshipRepository sponsorshipRepository;
+    private final Logger log = LoggerFactory.getLogger(StudentService.class);
 
     @Override
-    public StudentResponseDto createStudent(StudentRequestDto requestDto) {
+    public StudentResponseDto createStudent(StudentRequestDto requestDto, MultipartFile image) throws IOException {
 
         Student student = modelMapper.map(requestDto, Student.class);
         student.setSponsored(false);
@@ -43,6 +50,11 @@ public class StudentServiceImpl implements StudentService {
 
         student.setInstitution(institution);
         student.setStudentId(null);
+        // Save the image to Cloudflare R2 and get the file URL
+        if (!image.isEmpty()) {
+            String photoUrl = s3Service.uploadFile(image, student.getStudentName()); // Use S3Service to upload
+            student.setPhotoUrl(photoUrl); // Set the image URL in the item
+        }
 
         Student saved = studentRepository.save(student);
 
@@ -61,21 +73,35 @@ public class StudentServiceImpl implements StudentService {
     }
     @Override
     @Transactional
-    public StudentResponseDto updateStudent(Long studentId, StudentUpdateRequestDTO updateRequest) {
-        Student student = studentRepository.findById(studentId)
+    public StudentResponseDto updateStudent(Long studentId, StudentUpdateRequestDTO updateRequest, MultipartFile image) throws IOException {
+        Student existingStudent  = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
 
         // Update student fields
-        student.setStudentName(updateRequest.studentName());
-        student.setContactNumber(updateRequest.contactNumber());
-        student.setDob(updateRequest.dob());
-        student.setBio(updateRequest.bio());
-        student.setFinancial_rank(FinancialRank.valueOf(updateRequest.financial_rank()));
-        student.setRequiredMonthlySupport(updateRequest.requiredMonthlySupport());
-        student.setAddress(updateRequest.address());
-        student.setGuardianName(updateRequest.guardianName());
+        existingStudent .setStudentName(updateRequest.studentName());
+        existingStudent .setContactNumber(updateRequest.contactNumber());
+        existingStudent .setDob(updateRequest.dob());
+        existingStudent .setBio(updateRequest.bio());
+        existingStudent .setFinancial_rank(FinancialRank.valueOf(updateRequest.financial_rank()));
+        existingStudent .setRequiredMonthlySupport(updateRequest.requiredMonthlySupport());
+        existingStudent .setAddress(updateRequest.address());
+        existingStudent .setGuardianName(updateRequest.guardianName());
+        // Update institution if changed
 
-        Student updatedStudent = studentRepository.save(student);
+
+
+  // Handle image update
+        if (image != null && !image.isEmpty()) {
+            // Delete old image from Cloudflare R2 if exists
+            if (existingStudent.getPhotoUrl() != null) {
+                s3Service.deleteFile(existingStudent.getPhotoUrl());
+            }
+
+            // Upload new image
+            String photoUrl = s3Service.uploadFile(image, existingStudent.getStudentName());
+            existingStudent.setPhotoUrl(photoUrl);
+        }
+        Student updatedStudent = studentRepository.save(existingStudent );
         return modelMapper.map(updatedStudent, StudentResponseDto.class);
     }
 
@@ -199,21 +225,24 @@ public class StudentServiceImpl implements StudentService {
 //            return dto;
 //        });
 //    }
-    @Override
-    public List<StudentResponseDto> getStudentsByInstitution(Long institutionId) {
-        // Check if institution exists
-        Institutions institution = institutionRepository.findById(institutionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Institution not found with ID: " + institutionId));
-        // Fetch students associated with the institution
-        List<Student> students = studentRepository.findByInstitution(institution);
-        if (students.isEmpty()) {
-            throw new ResourceNotFoundException("No students found for Institution ID: " + institutionId);
-        }
-        // Convert to DTO
-        return students.stream()
-                .map(student -> modelMapper.map(student, StudentResponseDto.class))
-                .toList();
+@Override
+public List<StudentResponseDto> getStudentsByInstitution(Long institutionId) {
+    // Check if institution exists
+    Institutions institution = institutionRepository.findById(institutionId)
+            .orElseThrow(() -> new ResourceNotFoundException("Institution not found with ID: " + institutionId));
+
+    // Fetch students associated with the institution
+    List<Student> students = studentRepository.findByInstitution(institution);
+
+    if (students.isEmpty()) {
+        throw new ResourceNotFoundException("No students found for Institution ID: " + institutionId);
     }
+
+    // Convert to DTOs
+    return students.stream()
+            .map(this::convertToStudentResponseDto)
+            .collect(Collectors.toList());
+}
     @Override
     public Page<StudentResponseDto> getStudentsByInstitution(Long institutionId, Pageable pageable) {
         // Verify institution exists
@@ -226,8 +255,125 @@ public class StudentServiceImpl implements StudentService {
         // Convert to DTO with pagination
         return studentsPage.map(this::convertToStudentResponseDto);
     }
+    @Override
+    @Transactional()
+    public List<StudentResponseDto> getStudentPendingSponsorships(Long studentId, LocalDate fromDate) {
 
-    private StudentResponseDto convertToStudentResponseDto(Student student) {
+        try {
+            // 1. Check if student exists
+            Student student = studentRepository.findById(studentId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
+
+            // 2. Fetch pending sponsorships
+            List<Sponsorship> pendingSponsorships = sponsorshipRepository
+                    .findByStudentStudentIdAndStatusAndSponsorStartDateAfter(
+                            studentId,
+                            SponsorshipStatus.PENDING_PAYMENT,
+                            fromDate
+                    );
+
+            if (pendingSponsorships.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            // 3. Convert to DTO (using a dedicated method for pending sponsorships)
+            StudentResponseDto studentDto = convertToStudentResponseDtoWithPendingSponsorships(student, pendingSponsorships);
+
+            return Collections.singletonList(studentDto);
+
+        } catch (ResourceNotFoundException e) {
+            log.warn("Student not found: {}", studentId);
+            throw e;
+        } catch (Exception e) {
+            log.error("Error fetching pending sponsorships for student {}: {}", studentId, e.getMessage(), e);
+            throw new RuntimeException("Failed to fetch pending sponsorships", e);
+        }
+    }
+    @Override
+    @Transactional()
+    public boolean hasPendingSponsorships(Long studentId, LocalDate fromDate) {
+        try {
+            long count = sponsorshipRepository.countByStudentStudentIdAndStatusAndSponsorStartDateAfter(
+                    studentId,
+                    SponsorshipStatus.PENDING_PAYMENT,
+                    fromDate
+            );
+            return count > 0;
+        } catch (Exception e) {
+            log.error("Error checking pending sponsorships for student {}: {}", studentId, e.getMessage(), e);
+            return false;
+        }
+    }
+    // Method for converting student with ONLY pending sponsorships
+    private StudentResponseDto convertToStudentResponseDtoWithPendingSponsorships(
+            Student student, List<Sponsorship> pendingSponsorships) {
+
+        StudentResponseDto dto = new StudentResponseDto();
+
+        // Set basic student info
+        dto.setStudentId(student.getStudentId());
+        dto.setStudentName(student.getStudentName());
+        dto.setRequiredMonthlySupport(student.getRequiredMonthlySupport());
+
+        // Set institution information
+        Institutions institution = student.getInstitution();
+        dto.setInstitutionsId(institution.getInstitutionsId());
+        dto.setInstitutionName(institution.getInstitutionName());
+
+        // Set complete InstitutionResponseDto
+        InstitutionResponseDto institutionDto = modelMapper.map(institution, InstitutionResponseDto.class);
+        dto.setInstitutions(institutionDto);
+
+        // Convert ONLY pending sponsorships
+        List<StudentResponseDto.SponsorInfoDto> pendingSponsorInfoList = pendingSponsorships.stream()
+                .map(sponsorship -> convertToSponsorInfoDto(sponsorship))
+                .collect(Collectors.toList());
+
+        dto.setSponsors(pendingSponsorInfoList);
+
+        // Calculate total sponsored amount from COMPLETED sponsorships only
+        BigDecimal totalSponsoredAmount = calculateTotalSponsoredAmount(student);
+        dto.setSponsoredAmount(totalSponsoredAmount);
+        dto.setFullySponsored(totalSponsoredAmount.compareTo(student.getRequiredMonthlySupport()) >= 0);
+        dto.setSponsored(!pendingSponsorInfoList.isEmpty() || totalSponsoredAmount.compareTo(BigDecimal.ZERO) > 0);
+
+        return dto;
+    }
+
+    // Helper method to convert Sponsorship to SponsorInfoDto
+    private StudentResponseDto.SponsorInfoDto convertToSponsorInfoDto(Sponsorship sponsorship) {
+        return StudentResponseDto.SponsorInfoDto.builder()
+                .donorId(sponsorship.getDonor().getDonorId())
+                .donorName(sponsorship.getDonor().getName())
+                .monthlyAmount(sponsorship.getMonthlyAmount())
+                .sponsorStartDate(sponsorship.getSponsorStartDate())
+                .startDate(sponsorship.getStartDate())
+                .endDate(sponsorship.getEndDate())
+                .status(sponsorship.getStatus())
+                .lastPaymentDate(sponsorship.getLastPaymentDate())
+                .paidUpTo(sponsorship.getPaidUpTo())
+                .monthsPaid(sponsorship.getMonthsPaid())
+                .totalMonths(sponsorship.getTotalMonths())
+                .totalAmount(sponsorship.getTotalAmount())
+                .nextPaymentDueDate(sponsorship.getNextPaymentDueDate())
+                .build();
+    }
+
+    // Calculate total sponsored amount from COMPLETED sponsorships
+    private BigDecimal calculateTotalSponsoredAmount(Student student) {
+        if (student.getCurrentSponsorships() == null) {
+            return BigDecimal.ZERO;
+        }
+
+        return student.getCurrentSponsorships().stream()
+                .filter(sponsorship -> sponsorship.getStatus() == SponsorshipStatus.COMPLETED)
+                .map(Sponsorship::getTotalPaidAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    // Original method for general student conversion (unchanged)
+    public StudentResponseDto convertToStudentResponseDto(Student student) {
         StudentResponseDto dto = modelMapper.map(student, StudentResponseDto.class);
 
         // Set institution information
@@ -238,7 +384,6 @@ public class StudentServiceImpl implements StudentService {
         InstitutionResponseDto institutionDto = modelMapper.map(student.getInstitution(), InstitutionResponseDto.class);
         dto.setInstitutions(institutionDto);
 
-
         // Calculate sponsorship details
         BigDecimal totalSponsoredAmount = BigDecimal.ZERO;
         List<StudentResponseDto.SponsorInfoDto> sponsorInfoList = new ArrayList<>();
@@ -248,21 +393,7 @@ public class StudentServiceImpl implements StudentService {
                 if (sponsorship.getStatus() == SponsorshipStatus.COMPLETED) {
                     totalSponsoredAmount = totalSponsoredAmount.add(sponsorship.getTotalPaidAmount());
 
-                    StudentResponseDto.SponsorInfoDto sponsorInfo = StudentResponseDto.SponsorInfoDto.builder()
-                            .donorId(sponsorship.getDonor().getDonorId())
-                            .donorName(sponsorship.getDonor().getName())
-                            .monthlyAmount(sponsorship.getMonthlyAmount())
-                            .startDate(sponsorship.getStartDate())
-                            .endDate(sponsorship.getEndDate())
-                            .status(sponsorship.getStatus())
-                            .lastPaymentDate(sponsorship.getLastPaymentDate())
-                            .paidUpTo(sponsorship.getPaidUpTo())
-                            .monthsPaid(sponsorship.getMonthsPaid())
-                            .totalMonths(sponsorship.getTotalMonths())
-                            .totalAmount(sponsorship.getTotalAmount())
-                            .nextPaymentDueDate(sponsorship.getNextPaymentDueDate())
-                            .build();
-
+                    StudentResponseDto.SponsorInfoDto sponsorInfo = convertToSponsorInfoDto(sponsorship);
                     sponsorInfoList.add(sponsorInfo);
                 }
             }
@@ -275,7 +406,6 @@ public class StudentServiceImpl implements StudentService {
 
         return dto;
     }
-
     public List<StudentResponseDto> searchStudentsByInstitution(
             Long institutionId,
             String studentName,
@@ -309,13 +439,26 @@ public class StudentServiceImpl implements StudentService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public void deleteStudent(Long studentId) {
-        if (!studentRepository.existsById(studentId)) {
-            throw new ResourceNotFoundException("Student not found with id: " + studentId);
-        }
-        studentRepository.deleteById(studentId);
+//    @Override
+//    public void deleteStudent(Long studentId) {
+//        if (!studentRepository.existsById(studentId)) {
+//            throw new ResourceNotFoundException("Student not found with id: " + studentId);
+//        }
+//        studentRepository.deleteById(studentId);
+//    }
+@Override
+public void deleteStudent(Long studentId) {
+    Student student = studentRepository.findById(studentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
+
+    // Delete image from S3 if exists
+    if (student.getPhotoUrl() != null && !student.getPhotoUrl().isEmpty()) {
+        s3Service.deleteFile(student.getPhotoUrl());
     }
+
+    // Delete student record
+    studentRepository.delete(student);
+}
 
     @Override
     public List<StudentResponseDto> getTop3UnsponsoredUrgentStudents() {

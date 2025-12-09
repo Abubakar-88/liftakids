@@ -16,15 +16,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -98,7 +101,16 @@ public class SponsorshipServiceImpl implements SponsorshipService {
         response.setMessage("New sponsorship created successfully");
         return response;
     }
+    @Override
+    public List<SponsorshipResponseDto> getPendingSponsorshipsForInstitution(Long institutionId) {
+        // Find sponsorships that are ACTIVE but have no payments or pending payments
+        List<Sponsorship> pendingSponsorships = sponsorshipRepository
+                .findByStudentInstitutionIdAndStatus(institutionId, SponsorshipStatus.ACTIVE);
 
+        return pendingSponsorships.stream()
+                .map(this::sponsorConvertToDto)
+                .collect(Collectors.toList());
+    }
     @Override
     @Transactional
     public Page<SponsorshipResponseDto> getAllSponsorships(Pageable pageable) {
@@ -135,11 +147,40 @@ public class SponsorshipServiceImpl implements SponsorshipService {
         return sponsorships.map(this::sponsorConvertToDto);
     }
 
+    // Get sponsorships with PENDING_PAYMENT status
+    public List<SponsorshipResponseDto> getPendingPaymentSponsorships(Long institutionId) {
+        List<Sponsorship> pendingSponsorships = sponsorshipRepository
+                .findByStudentInstitutionIdAndStatus(institutionId, SponsorshipStatus.PENDING_PAYMENT);
 
+        return pendingSponsorships.stream()
+                .map(this::sponsorConvertToDto)
+                .collect(Collectors.toList());
+    }
+
+    // Optimized version
+    public List<SponsorshipResponseDto> getPendingPaymentSponsorshipsOptimized(Long institutionId) {
+        List<Sponsorship> pendingSponsorships = sponsorshipRepository
+                .findPendingPaymentSponsorships(institutionId);
+
+        return pendingSponsorships.stream()
+                .map(this::sponsorConvertToDto)
+                .collect(Collectors.toList());
+    }
+    public Map<String, Long> getSponsorshipStatusCounts(Long institutionId) {
+        List<Sponsorship> allSponsorships = sponsorshipRepository
+                .findByStudentInstitutionId(institutionId);
+
+        return allSponsorships.stream()
+                .collect(Collectors.groupingBy(
+                        sponsorship -> sponsorship.getStatus().name(),
+                        Collectors.counting()
+                ));
+    }
     // Helper methods
 private SponsorshipResponseDto sponsorConvertToDto(Sponsorship sponsorship) {
     Student student = sponsorship.getStudent();
-
+    String paymentStatus = "PENDING";
+    String statusMessage = "Sponsorship confirmed but payment pending";
     return SponsorshipResponseDto.builder()
             .id(sponsorship.getId())
             .donorName(sponsorship.getDonor().getName())
@@ -167,12 +208,14 @@ private SponsorshipResponseDto sponsorConvertToDto(Sponsorship sponsorship) {
             .totalPayments(sponsorship.getPayments().size())
             .paymentMethod(sponsorship.getPaymentMethod())
             .status(sponsorship.getStatus())
+            .paymentStatus(paymentStatus)
             .sponsored(student.isSponsored()) // Make sure this is set properly
             .paymentDue(sponsorship.isPaymentDue())
             .overdue(sponsorship.isOverdue())
-            .message(String.format("Period: %s - %s",
-                    formatDate(sponsorship.getStartDate()),
-                    formatDate(sponsorship.getEndDate())))
+            .message(String.format("Sponsor: %s | Amount: ৳%s/month | Status: %s - Awaiting first payment",
+                    sponsorship.getDonor().getName(),
+                    sponsorship.getMonthlyAmount(),
+                    statusMessage))
             .sponsorDetails(mapSponsorDetails(sponsorship.getDonor()))
             .studentStatus(SponsorshipResponseDto.StudentSponsorshipStatusDto.builder()
                     .fullySponsored(student.isFullySponsored())
@@ -180,6 +223,7 @@ private SponsorshipResponseDto sponsorConvertToDto(Sponsorship sponsorship) {
                     .sponsoredAmount(student.getTotalSponsoredAmount())
                     .lastPaymentDate(sponsorship.getLastPaymentDate())
                     .paidUpTo(sponsorship.getPaidUpTo())
+                    .paymentStatus("PENDING_FIRST_PAYMENT")
                     .build())
             .build();
 }
@@ -318,4 +362,31 @@ private SponsorshipResponseDto convertToResDto(Sponsorship sponsorship) {
         Page<Sponsorship> sponsorships = sponsorshipRepository.findByDonorDonorId(donorId, pageable);
         return sponsorships.map(this::sponsorConvertToDto);
     }
+
+//    @Scheduled(cron = "0 0 2 * * ?") //
+//    @Transactional
+//    public void expireOldPendingSponsorships() {
+//        LocalDate threeDaysAgo = LocalDate.now().minusDays(3);
+//
+//        List<Sponsorship> expired = sponsorshipRepository
+//                .findByStatusAndSponsorStartDateBefore(
+//                        SponsorshipStatus.PENDING_PAYMENT,
+//                        threeDaysAgo
+//                );
+//
+//        expired.forEach(sponsorship -> {
+//            sponsorship.setStatus(SponsorshipStatus.EXPIRED);
+//            sponsorship.setUpDateAT(LocalDateTime.now());
+//        });
+//
+//        sponsorshipRepository.saveAll(expired);
+//
+//        if (!expired.isEmpty()) {
+//            log.info("Expired {} pending sponsorships older than {}",
+//                    expired.size(), threeDaysAgo);
+//        }
+//    }
+
+
+
 }

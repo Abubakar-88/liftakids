@@ -1,21 +1,11 @@
 package org.liftakids.config;
 
-import org.liftakids.dto.sponsorship.PaymentRequestDto;
-import org.liftakids.dto.sponsorship.PaymentResponseDto;
 import org.liftakids.dto.sponsorship.SponsorshipRequestDto;
-import org.liftakids.dto.sponsorship.SponsorshipResponseDto;
 import org.liftakids.entity.*;
-import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeMap;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
 
 @Configuration
 public class AppConfig {

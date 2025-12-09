@@ -5,6 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.liftakids.dto.student.StudentRequestDto;
 import org.liftakids.dto.student.StudentResponseDto;
 import org.liftakids.dto.student.StudentUpdateRequestDTO;
+import org.liftakids.entity.Sponsorship;
+import org.liftakids.entity.SponsorshipStatus;
+import org.liftakids.entity.Student;
+import org.liftakids.exception.ResourceNotFoundException;
+import org.liftakids.repositories.SponsorshipRepository;
 import org.liftakids.service.StudentService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,9 +17,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -23,20 +33,42 @@ import java.util.List;
 public class StudentController {
 
     private final StudentService studentService;
-
-    @PostMapping("/addStudent")
-    public ResponseEntity<StudentResponseDto> createStudent(@Valid @RequestBody StudentRequestDto requestDto) {
-        return new ResponseEntity<>(studentService.createStudent(requestDto), HttpStatus.CREATED);
+    private final SponsorshipRepository sponsorshipRepository;
+//    @PostMapping("/addStudent")
+//    public ResponseEntity<StudentResponseDto> createStudent(@Valid @RequestBody StudentRequestDto requestDto) {
+//        return new ResponseEntity<>(studentService.createStudent(requestDto), HttpStatus.CREATED);
+//    }
+@PostMapping(value = "/addStudent", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+public ResponseEntity<StudentResponseDto> createStudent(
+        @RequestPart("studentData") @Valid StudentRequestDto requestDto,
+        @RequestPart("image") MultipartFile image) {
+    try {
+        return new ResponseEntity<>(studentService.createStudent(requestDto, image), HttpStatus.CREATED);
+    } catch (IOException e) {
+        throw new RuntimeException("Failed to process image", e);
     }
+}
+//    @PutMapping("/{studentId}")
+//    public ResponseEntity<StudentResponseDto> updateStudent(
+//            @PathVariable Long studentId,
+//            @Valid @RequestBody StudentUpdateRequestDTO updateRequest) {
+//
+//        StudentResponseDto updatedStudent = studentService.updateStudent(studentId, updateRequest);
+//        return ResponseEntity.ok(updatedStudent);
+//    }
 
-    @PutMapping("/{studentId}")
+    @PutMapping(value = "/updateStudent/{studentId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<StudentResponseDto> updateStudent(
             @PathVariable Long studentId,
-            @Valid @RequestBody StudentUpdateRequestDTO updateRequest) {
-
-        StudentResponseDto updatedStudent = studentService.updateStudent(studentId, updateRequest);
-        return ResponseEntity.ok(updatedStudent);
+            @RequestPart("studentData") @Valid StudentUpdateRequestDTO updateRequest,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+        try {
+            return new ResponseEntity<>(studentService.updateStudent(studentId, updateRequest, image), HttpStatus.OK);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to process image", e);
+        }
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<StudentResponseDto> getStudentById(@PathVariable Long id) {
         return ResponseEntity.ok(studentService.getStudentById(id));
@@ -127,6 +159,44 @@ public class StudentController {
     public ResponseEntity<List<StudentResponseDto>> getTop3UnsponsoredUrgentStudents() {
         return ResponseEntity.ok(studentService.getTop3UnsponsoredUrgentStudents());
     }
+
+    @GetMapping("/{studentId}/pending-sponsorships")
+    public ResponseEntity<List<StudentResponseDto>> getPendingSponsorships(
+            @PathVariable Long studentId,
+            @RequestParam(required = false, defaultValue = "3") int days) {
+
+        try {
+            // ✅ Service method call
+            LocalDate fromDate = LocalDate.now().minusDays(days);
+            List<StudentResponseDto> result = studentService.getStudentPendingSponsorships(studentId, fromDate);
+
+            return ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            // Handle specific exceptions
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.emptyList());
+        }
+    }
+
+    @GetMapping("/{studentId}/has-pending-sponsorships")
+    public ResponseEntity<Boolean> hasPendingSponsorships(
+            @PathVariable Long studentId,
+            @RequestParam(required = false, defaultValue = "3") int days) {
+
+        try {
+            // ✅ Service method call
+            LocalDate fromDate = LocalDate.now().minusDays(days);
+            boolean hasPending = studentService.hasPendingSponsorships(studentId, fromDate);
+
+            return ResponseEntity.ok(hasPending);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(false);
+        }
+    }
+
 
 //    @GetMapping("/unsponsored/urgent")
 //    public ResponseEntity<List<StudentResponseDto>> getUnsponsoredUrgentStudents(

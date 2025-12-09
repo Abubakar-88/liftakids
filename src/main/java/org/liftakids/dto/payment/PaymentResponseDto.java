@@ -1,4 +1,4 @@
-package org.liftakids.dto.sponsorship;
+package org.liftakids.dto.payment;
 
 import lombok.*;
 import org.liftakids.entity.PaymentMethod;
@@ -30,6 +30,14 @@ public class PaymentResponseDto {
     private LocalDate startDate;
     private LocalDate endDate;
     private Integer totalMonths;
+    // new fields
+    private String receiptNumber;
+    private LocalDate confirmedDate;
+    private String receiptUrl;
+    private String confirmedBy;
+    private BigDecimal receivedAmount;
+    private String institutionNotes;
+
 
     public String getPaymentPeriod() {
         if (startDate != null && endDate != null) {

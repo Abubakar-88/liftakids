@@ -3,6 +3,7 @@ package org.liftakids.dto.student;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import org.liftakids.entity.FinancialRank;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -32,7 +33,7 @@ public class StudentRequestDto {
     @Size(max = 1000, message = "Bio must be less than 1000 characters")
     private String bio;
 
-    private String photoUrl;
+    private MultipartFile image;
 
     @NotBlank(message = "Guardian name is required")
     private String guardianName;

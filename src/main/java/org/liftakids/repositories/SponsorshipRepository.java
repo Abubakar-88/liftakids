@@ -1,5 +1,6 @@
 package org.liftakids.repositories;
 
+import org.liftakids.dto.student.StudentResponseDto;
 import org.liftakids.entity.PaymentMethod;
 import org.liftakids.entity.Sponsorship;
 import org.liftakids.entity.SponsorshipStatus;
@@ -19,6 +20,14 @@ public interface SponsorshipRepository extends JpaRepository<Sponsorship, Long> 
             SponsorshipStatus status,
             LocalDate date
     );
+    // Find active sponsorship by donor and student
+    @Query("SELECT s FROM Sponsorship s WHERE s.donor.donorId = :donorId " +
+            "AND s.student.studentId = :studentId " +
+            "AND s.status = :status")
+    Optional<Sponsorship> findByDonorIdAndStudentIdAndStatus(
+            @Param("donorId") Long donorId,
+            @Param("studentId") Long studentId,
+            @Param("status") SponsorshipStatus status);
 
     @Query("SELECT s FROM Sponsorship s WHERE s.student.studentId = :studentId")
     List<Sponsorship> findByStudentId(@Param("studentId") Long studentId);
@@ -83,12 +92,58 @@ public interface SponsorshipRepository extends JpaRepository<Sponsorship, Long> 
             @Param("endDate") LocalDate endDate,
             Pageable pageable);
     List<Sponsorship> findByStudent_StudentId(Long studentId);
-    List<Sponsorship> findByStudent_StudentIdAndStatus(Long studentId, SponsorshipStatus status);
+    //List<Sponsorship> findByStudent_StudentIdAndStatus(Long studentId, SponsorshipStatus status);
     // Find sponsorships by donor ID with pagination
     @Query("SELECT s FROM Sponsorship s WHERE s.donor.donorId = :donorId ORDER BY s.startDate DESC")
     Page<Sponsorship> findByDonorDonorId(@Param("donorId") Long donorId, Pageable pageable);
     List<Sponsorship> findByDonorDonorId(Long donorId);
 
 
+    // Find sponsorships by institution ID and status
+    @Query("SELECT s FROM Sponsorship s " +
+            "JOIN s.student st " +
+            "JOIN st.institution i " +
+            "WHERE i.institutionsId = :institutionId " +
+            "AND s.status = :status")
+    List<Sponsorship> findByStudentInstitutionIdAndStatus(
+            @Param("institutionId") Long institutionId,
+            @Param("status") SponsorshipStatus status);
 
+    // Specific query for PENDING_PAYMENT status
+    @Query("SELECT s FROM Sponsorship s " +
+            "JOIN s.student st " +
+            "JOIN st.institution i " +
+            "WHERE i.institutionsId = :institutionId " +
+            "AND s.status = org.liftakids.entity.SponsorshipStatus.PENDING_PAYMENT " +
+            "ORDER BY s.sponsorStartDate DESC")
+    List<Sponsorship> findPendingPaymentSponsorships(
+            @Param("institutionId") Long institutionId);
+
+    @Query("SELECT s FROM Sponsorship s " +
+            "JOIN s.student st " +
+            "JOIN st.institution i " +
+            "WHERE i.institutionsId = :institutionId")
+    List<Sponsorship> findByStudentInstitutionId(@Param("institutionId") Long institutionId);
+
+    List<Sponsorship> findByStudentStudentIdAndStatusAndSponsorStartDateAfter(
+            Long studentId,
+            SponsorshipStatus status,
+            LocalDate sponsorStartDate
+    );
+    long countByStudentStudentIdAndStatusAndSponsorStartDateAfter(
+            Long studentId,
+            SponsorshipStatus status,
+            LocalDate sponsorStartDate
+    );
+
+    List<Sponsorship> findByStatusAndSponsorStartDateBefore(
+            SponsorshipStatus status,
+            LocalDate date);
+
+    @Query("SELECT s FROM Sponsorship s WHERE s.status = :status " +
+            "AND s.sponsorStartDate >= :startDate AND s.sponsorStartDate < :endDate")
+    List<Sponsorship> findByStatusAndSponsorStartDateBetween(
+            @Param("status") SponsorshipStatus status,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 }

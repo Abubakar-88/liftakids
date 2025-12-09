@@ -42,6 +42,7 @@ public class SponsorshipResponseDto {
     private Integer totalPayments;
     private PaymentMethod paymentMethod;
     private SponsorshipStatus status;
+    private String paymentStatus;
     private String periodDisplay;
     private String paymentMethodDisplay;
     private boolean paymentDue;
@@ -60,6 +61,7 @@ public class SponsorshipResponseDto {
         private BigDecimal requiredAmount;
         private BigDecimal sponsoredAmount;
         private LocalDate lastPaymentDate;
+        private String paymentStatus;
         private LocalDate paidUpTo;
     }
 

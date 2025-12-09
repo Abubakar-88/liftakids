@@ -37,7 +37,7 @@ public class Payment {
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "paymentMethod", length = 20)
     private PaymentMethod paymentMethod;
 
     @Enumerated(EnumType.STRING)
@@ -59,14 +59,34 @@ public class Payment {
     @Column(name = "card_last_four")
     private String cardLastFour;
 
-    @Column(name = "payer_email")
-    private String payerEmail;
-
-    @Column(name = "payer_phone")
-    private String payerPhone;
 
     @Column(name = "payment_confirmation_message")
     private String confirmationMessage;
+
+    @Column(name = "receipt_url")
+    private String receiptUrl;
+
+    @Column(name = "confirmed_date")
+    private LocalDate confirmedDate;
+
+    @Column(name = "receipt_number")
+    private String receiptNumber;
+
+    @Column(name = "institution_notes")
+    private String institutionNotes;
+
+    @Column(name = "received_amount", precision = 10, scale = 2)
+    private BigDecimal receivedAmount;
+
+    @Column(name = "confirmed_by")
+    private String confirmedBy;
+
+    @Column(name = "received_date")
+    private LocalDate receivedDate;
+
+    @Column(name = "receipt_date")
+    private LocalDate receiptDate;
+
 
     @PrePersist
     @PreUpdate
@@ -105,8 +125,6 @@ public class Payment {
                 endDate.withDayOfMonth(1)
         ) + 1;
 
-
-
         return fullBuilder()
                 .sponsorship(sponsorship)
                 .paymentDate(paymentDate)
@@ -116,9 +134,9 @@ public class Payment {
                 .startDate(startDate)
                 .endDate(endDate)
                 .paidUpTo(endDate) // Default to end date
-                .totalMonths(months);
+                .totalMonths(months)
+                .receivedAmount(amount); // Default received amount to original amount
     }
-
     public void setCardDetails(String fullCardNumber) {
         if (fullCardNumber != null && fullCardNumber.length() >= 4) {
             this.cardLastFour = fullCardNumber.substring(fullCardNumber.length() - 4);

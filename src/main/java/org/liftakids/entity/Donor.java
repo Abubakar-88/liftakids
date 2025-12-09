@@ -53,6 +53,7 @@ public class Donor {
     @Where(clause = "status = 'ACTIVE'")
     private List<Sponsorship> activeSponsorships = new ArrayList<>();
 
-
+    @OneToMany(mappedBy = "donor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Notification> notifications = new ArrayList<>();
 
 }

@@ -3,6 +3,8 @@ package org.liftakids.controller;
 import lombok.RequiredArgsConstructor;
 import org.liftakids.dto.donor.*;
 import org.liftakids.dto.sponsorship.SponsorshipResponseDto;
+import org.liftakids.entity.Donor;
+import org.liftakids.repositories.DonorRepository;
 import org.liftakids.service.DonorService;
 import org.liftakids.service.SponsorshipService;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,7 @@ import java.util.List;
 public class DonorController {
     private final SponsorshipService sponsorshipService;
     private final DonorService donorService;
+    private final DonorRepository donorRepository;
 
     @PostMapping
     public ResponseEntity<DonorResponseDto> createDonor(@Valid @RequestBody DonorRequestDto requestDto) {
@@ -56,7 +59,7 @@ public class DonorController {
             @Valid @RequestBody DonorUpdateRequestDto updateRequestDto) {
         return ResponseEntity.ok(donorService.updateDonor(id, updateRequestDto));
     }
-    @GetMapping("/search")
+    @GetMapping("/by/search")
     public ResponseEntity<List<DonorResponseDto>> searchDonorsSimple(@RequestParam String searchTerm) {
         return ResponseEntity.ok(donorService.searchDonors(searchTerm));
     }
@@ -105,7 +108,25 @@ public class DonorController {
         return ResponseEntity.ok(sponsorshipService.getSponsorshipsByDonorId(donorId, pageable));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<Donor>> searchDonors(@RequestParam String name) {
+        List<Donor> donors = donorRepository.findByNameContainingIgnoreCase(name);
+        return ResponseEntity.ok(donors);
+    }
 
+    // Get all donors (for dropdown)
+    @GetMapping("/alldonor/institutions")
+    public ResponseEntity<List<Donor>> getAllDonorsInstitution() {
+        List<Donor> donors = donorRepository.findAll();
+        return ResponseEntity.ok(donors);
+    }
+
+    // Get donors by institution (existing)
+    @GetMapping("/institution/{institutionId}")
+    public ResponseEntity<List<Donor>> getDonorsByInstitution(@PathVariable Long institutionId) {
+        List<Donor> donors = donorRepository.findDonorsByInstitution(institutionId);
+        return ResponseEntity.ok(donors);
+    }
 
 
 }

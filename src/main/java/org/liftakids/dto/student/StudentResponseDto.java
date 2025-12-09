@@ -22,6 +22,7 @@ public class StudentResponseDto {
     private String bio;
     private String photoUrl;
     private boolean sponsored;
+
     private String guardianName;
     private Long institutionsId;
     private String institutionName;
@@ -38,6 +39,7 @@ public class StudentResponseDto {
         private Long donorId;
         private String donorName;
         private BigDecimal monthlyAmount;
+        private LocalDate sponsorStartDate;
         private Integer totalMonths;
         private LocalDate startDate;
         private LocalDate endDate;

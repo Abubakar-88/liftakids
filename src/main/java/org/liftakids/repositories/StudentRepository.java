@@ -1,6 +1,7 @@
 package org.liftakids.repositories;
 
 import org.liftakids.entity.Institutions;
+import org.liftakids.entity.SponsorshipStatus;
 import org.liftakids.entity.Student;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -55,5 +56,23 @@ public interface StudentRepository extends JpaRepository<Student,Long> {
 //    @Query("SELECT s FROM Student s WHERE s.sponsored = false AND s.financialRank = 'URGENT' AND s.status = 'ACTIVE' ORDER BY s.createdDate DESC")
 //    List<Student> findUnsponsoredUrgentStudents(Pageable pageable);
 
+    // Find students by institution
+    List<Student> findByInstitutionInstitutionsId(Long institutionId);
+
+    // Search students by name within institution
+    @Query("SELECT s FROM Student s WHERE s.institution.institutionsId = :institutionId " +
+            "AND LOWER(s.studentName) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+    List<Student> findByInstitutionAndNameContaining(
+            @Param("institutionId") Long institutionId,
+            @Param("searchTerm") String searchTerm);
+    List<Student> findByInstitutionInstitutionsIdAndStudentNameContainingIgnoreCase(
+            Long institutionId, String studentName);
+
+    // PENDING_PAYMENT status-এর sponsorship যেসব students-এর আছে
+    @Query("SELECT DISTINCT s FROM Student s " +
+            "JOIN s.currentSponsorships sp " +
+            "WHERE sp.status = :status")
+    List<Student> findStudentsWithPendingPaymentSponsorships(
+            @Param("status") SponsorshipStatus status);
 
 }

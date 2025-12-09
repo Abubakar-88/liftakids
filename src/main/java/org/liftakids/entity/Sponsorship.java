@@ -6,6 +6,7 @@ import org.liftakids.exception.BusinessException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +85,8 @@ public class Sponsorship {
 
     @Transient
     private Integer monthsRemaining;
-
+    @Column(name = "up_date_at")
+    private LocalDateTime upDateAT;
 
     @PostRemove
     private void removeFromStudent() {
@@ -158,10 +160,8 @@ public class Sponsorship {
         this.paymentDue = false;
         this.overdue = false;
 
-        // Calculate months paid
-        this.monthsPaid = this.payments.stream()
-                .mapToInt(p -> p.getTotalMonths() != null ? p.getTotalMonths() : 0)
-                .sum();
+        // Calculate months paid - CORRECTED LOGIC
+        this.monthsPaid = calculateActualMonthsPaid();
 
         // Find the latest paidUpTo date from payments
         this.paidUpTo = this.payments.stream()
@@ -170,7 +170,7 @@ public class Sponsorship {
                 .max(LocalDate::compareTo)
                 .orElse(null);
 
-        // Calculate next payment due date - NEW IMPROVED LOGIC
+        // Calculate next payment due date
         if (this.paidUpTo != null) {
             if (this.paidUpTo.isBefore(this.endDate)) {
                 this.nextPaymentDueDate = this.paidUpTo.plusMonths(1);
@@ -189,7 +189,7 @@ public class Sponsorship {
             }
         }
 
-        // Calculate payment due status - NEW IMPROVED LOGIC
+        // Calculate payment due status
         if (this.nextPaymentDueDate != null) {
             if (!today.isBefore(this.nextPaymentDueDate)) {
                 this.paymentDue = true;
@@ -198,10 +198,41 @@ public class Sponsorship {
                 }
             }
         }
+
+        // Calculate months remaining
+        if (this.paidUpTo != null && this.endDate != null) {
+            if (this.paidUpTo.isBefore(this.endDate)) {
+                this.monthsRemaining = (int) ChronoUnit.MONTHS.between(
+                        this.paidUpTo.withDayOfMonth(1),
+                        this.endDate.withDayOfMonth(1)
+                );
+            } else {
+                this.monthsRemaining = 0;
+            }
+        } else {
+            this.monthsRemaining = this.totalMonths;
+        }
+
         if (this.student != null) {
             this.student.updateSponsorshipStatus();
         }
     }
+
+    // New method to calculate actual months paid based on sponsorStartDate to paidUpTo
+    private int calculateActualMonthsPaid() {
+        if (this.sponsorStartDate == null || this.paidUpTo == null) {
+            return 0;
+        }
+
+        // Calculate months between sponsorStartDate and paidUpTo (inclusive)
+        long monthsBetween = ChronoUnit.MONTHS.between(
+                this.sponsorStartDate.withDayOfMonth(1),
+                this.paidUpTo.withDayOfMonth(1)
+        ) + 1; // +1 to include both start and end months
+
+        return Math.max(0, (int) monthsBetween);
+    }
+
     public void setStatus(SponsorshipStatus newStatus) {
         SponsorshipStatus oldStatus = this.status;
         this.status = newStatus;

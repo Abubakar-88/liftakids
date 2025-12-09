@@ -1,4 +1,4 @@
-package org.liftakids.dto.sponsorship;
+package org.liftakids.dto.payment;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import org.hibernate.validator.constraints.CreditCardNumber;
+import org.liftakids.dto.sponsorship.MonthYearDeserializer;
 import org.liftakids.entity.PaymentMethod;
 
 import java.math.BigDecimal;
@@ -15,7 +16,9 @@ import java.time.LocalDate;
 public class PaymentRequestDto {
     @NotNull(message = "Sponsorship ID is required")
     private Long sponsorshipId;
-
+    private Long studentId;
+    private Long donorId;
+    private BigDecimal monthlyAmount;
     @NotNull(message = "Start date is required")
     @JsonDeserialize(using = MonthYearDeserializer.class)
     private LocalDate startDate;
@@ -37,6 +40,11 @@ public class PaymentRequestDto {
     private CardDetails cardDetails;
 
     private boolean testPayment = false;
+    // Institution manual payment fields
+    private String receiptNumber;
+    private BigDecimal receivedAmount;
+    private String receiptUrl;
+    private String notes;
 
     @Data
     public static class CardDetails {

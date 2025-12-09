@@ -2,6 +2,8 @@ package org.liftakids.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.liftakids.dto.payment.PaymentRequestDto;
+import org.liftakids.dto.payment.PaymentResponseDto;
 import org.liftakids.dto.sponsorship.*;
 import org.liftakids.entity.Sponsorship;
 import org.liftakids.exception.ResourceNotFoundException;
@@ -20,10 +22,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/sponsorships")
