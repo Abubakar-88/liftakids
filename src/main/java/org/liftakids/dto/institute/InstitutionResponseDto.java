@@ -21,7 +21,7 @@ public class InstitutionResponseDto {
     private Long unionOrAreaId;
     private InstitutionType type;
     private String teacherName;
-    private String TeacherDesignation;
+    private String teacherDesignation;
     private String email;
     private String phone;
     private String villageOrHouse;

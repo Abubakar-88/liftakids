@@ -52,7 +52,7 @@ public class Institutions {
     private String teacherName;
 
     @Column(name = "teacher_designation",nullable = false)
-    private String TeacherDesignation;
+    private String teacherDesignation;
 
     @Email
     @Column(nullable = false, unique = true)

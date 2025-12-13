@@ -34,7 +34,7 @@ public class InstitutionRequestDto {
     private String teacherName;
 
     @NotBlank
-    private String TeacherDesignation;
+    private String teacherDesignation;
 
     @NotBlank
     @Email
