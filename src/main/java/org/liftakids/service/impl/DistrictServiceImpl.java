@@ -6,15 +6,20 @@ import org.liftakids.dto.district.DistrictResponseDTO;
 import org.liftakids.dto.thana.ThanaResponseDTO;
 import org.liftakids.entity.address.Districts;
 import org.liftakids.entity.address.Divisions;
+import org.liftakids.entity.address.Thanas;
 import org.liftakids.repositories.DistrictRepository;
 import org.liftakids.repositories.DivisionRepository;
+import org.liftakids.repositories.ThanaRepository;
 import org.liftakids.service.DistrictService;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +29,7 @@ public class DistrictServiceImpl implements DistrictService {
     private final DistrictRepository districtRepository;
     private final DivisionRepository divisionRepository;
     private final ModelMapper modelMapper;
+    private final ThanaRepository thanaRepository;
 
     @Override
     public DistrictDto create(DistrictDto dto) {
@@ -76,12 +82,59 @@ public class DistrictServiceImpl implements DistrictService {
 
     @Override
     public List<DistrictResponseDTO> getDistrictsByDivisionId(Long divisionId) {
-        // Now using the correct repository method
+        // 1. Batch  district ids
         List<Districts> districts = districtRepository.findByDivisionId(divisionId);
-        return districts.stream()
-                .map(district -> modelMapper.map(district, DistrictResponseDTO.class))
+        List<Long> districtIds = districts.stream()
+                .map(Districts::getDistrictId)
                 .collect(Collectors.toList());
+
+        // 2. Single query get thanas
+        List<Thanas> allThanas = thanaRepository.findByDistrictIdIn(districtIds);
+
+        // 3. Map  districtId -> List<Thanas>
+        Map<Long, List<Thanas>> thanasByDistrict = allThanas.stream()
+                .collect(Collectors.groupingBy(th -> th.getDistrict().getDistrictId()));
+
+        // 4. DTO make
+        return districts.stream().map(district -> {
+            DistrictResponseDTO dto = new DistrictResponseDTO();
+            dto.setDistrictId(district.getDistrictId());
+            dto.setDistrictName(district.getDistrictName());
+
+            if (district.getDivision() != null) {
+                dto.setDivisionId(district.getDivision().getDivisionId());
+                dto.setDivisionName(district.getDivision().getDivisionName());
+            }
+
+            // 5. get thanas from map
+            List<Thanas> districtThanas = thanasByDistrict.getOrDefault(
+                    district.getDistrictId(),
+                    Collections.emptyList()
+            );
+
+            Set<ThanaResponseDTO> thanaDTOs = districtThanas.stream()
+                    .map(th -> {
+                        ThanaResponseDTO thDTO = new ThanaResponseDTO();
+                        thDTO.setThanaId(th.getThanaId());
+                        thDTO.setThanaName(th.getThanaName());
+                        thDTO.setDistrictId(district.getDistrictId());
+                        thDTO.setDistrictName(district.getDistrictName());
+                        return thDTO;
+                    })
+                    .collect(Collectors.toSet());
+
+            dto.setThanas(thanaDTOs);
+            return dto;
+        }).collect(Collectors.toList());
     }
+//    @Override
+//    public List<DistrictResponseDTO> getDistrictsByDivisionId(Long divisionId) {
+//        // Now using the correct repository method
+//        List<Districts> districts = districtRepository.findByDivisionId(divisionId);
+//        return districts.stream()
+//                .map(district -> modelMapper.map(district, DistrictResponseDTO.class))
+//                .collect(Collectors.toList());
+//    }
 
     @Override
     public Page<DistrictResponseDTO> getAllDistricts(Pageable pageable) {

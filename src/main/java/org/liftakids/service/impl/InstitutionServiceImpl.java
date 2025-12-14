@@ -115,8 +115,9 @@ public class InstitutionServiceImpl implements InstitutionService {
     // Filtered (no pagination)
     @Override
     public List<InstitutionBasicResponse> getByUnionOrArea(Long unionOrAreaId) {
-        return institutionRepository.findByUnionOrAreaId(unionOrAreaId).stream()
-                .map(i -> modelMapper.map(i, InstitutionBasicResponse.class))
+        return institutionRepository.findByUnionOrAreaId(unionOrAreaId)
+                .stream()
+                .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 
@@ -141,18 +142,104 @@ public class InstitutionServiceImpl implements InstitutionService {
 
         return page.map(this::convertToResponse);
     }
-
     private InstitutionBasicResponse convertToResponse(Institutions institution) {
-        InstitutionBasicResponse response = modelMapper.map(institution, InstitutionBasicResponse.class);
+        InstitutionBasicResponse response = new InstitutionBasicResponse();
 
-        // Manually map the location objects if needed
-        response.setDivision(modelMapper.map(institution.getDivision(), DivisionResponseDTO.class));
-        response.setDistrict(modelMapper.map(institution.getDistrict(), DistrictResponseDTO.class));
-        response.setThana(modelMapper.map(institution.getThana(), ThanaResponseDTO.class));
-        response.setUnionOrArea(modelMapper.map(institution.getUnionOrArea(), UnionOrAreaResponseDTO.class));
+        // Basic fields
+        response.setInstitutionsId(institution.getInstitutionsId());
+        response.setInstitutionName(institution.getInstitutionName());
+        response.setType(institution.getType());
+        response.setEmail(institution.getEmail());
+        response.setPhone(institution.getPhone());
+        response.setVillageOrHouse(institution.getVillageOrHouse());
+
+        // Manual mapping for location objects
+        if (institution.getDivision() != null) {
+            response.setDivision(mapToDivisionDTO(institution.getDivision()));
+        }
+
+        if (institution.getDistrict() != null) {
+            response.setDistrict(mapToDistrictDTO(institution.getDistrict()));
+        }
+
+        if (institution.getThana() != null) {
+            response.setThana(mapToThanaDTO(institution.getThana()));
+        }
+
+        if (institution.getUnionOrArea() != null) {
+            response.setUnionOrArea(mapToUnionOrAreaDTO(institution.getUnionOrArea()));
+        }
 
         return response;
     }
+
+    private DivisionResponseDTO mapToDivisionDTO(Divisions division) {
+        DivisionResponseDTO dto = new DivisionResponseDTO();
+        dto.setDivisionId(division.getDivisionId());
+        dto.setDivisionName(division.getDivisionName());
+        // Don't include districts list to avoid circular reference
+        // dto.setDistricts(new ArrayList<>());
+        return dto;
+    }
+
+    private DistrictResponseDTO mapToDistrictDTO(Districts district) {
+        DistrictResponseDTO dto = new DistrictResponseDTO();
+        dto.setDistrictId(district.getDistrictId());
+        dto.setDistrictName(district.getDistrictName());
+
+        if (district.getDivision() != null) {
+            dto.setDivisionId(district.getDivision().getDivisionId());
+            dto.setDivisionName(district.getDivision().getDivisionName());
+        }
+
+        // Empty thanas set - avoid lazy loading issues
+        dto.setThanas(new HashSet<>());
+        return dto;
+    }
+
+    private ThanaResponseDTO mapToThanaDTO(Thanas thana) {
+        ThanaResponseDTO dto = new ThanaResponseDTO();
+        dto.setThanaId(thana.getThanaId());
+        dto.setThanaName(thana.getThanaName());
+
+        if (thana.getDistrict() != null) {
+            dto.setDistrictId(thana.getDistrict().getDistrictId());
+            dto.setDistrictName(thana.getDistrict().getDistrictName());
+
+            if (thana.getDistrict().getDivision() != null) {
+                dto.setDivisionId(thana.getDistrict().getDivision().getDivisionId());
+                dto.setDivisionName(thana.getDistrict().getDivision().getDivisionName());
+            }
+        }
+
+        // Empty unionOrAreas list
+        dto.setUnionOrAreas(new ArrayList<>());
+        return dto;
+    }
+
+    private UnionOrAreaResponseDTO mapToUnionOrAreaDTO(UnionOrArea unionOrArea) {
+        UnionOrAreaResponseDTO dto = new UnionOrAreaResponseDTO();
+        dto.setUnionOrAreaId(unionOrArea.getUnionOrAreaId());
+        dto.setUnionOrAreaName(unionOrArea.getUnionOrAreaName());
+
+        if (unionOrArea.getThana() != null) {
+            dto.setThanaId(unionOrArea.getThana().getThanaId());
+            dto.setThanaName(unionOrArea.getThana().getThanaName());
+
+            if (unionOrArea.getThana().getDistrict() != null) {
+                dto.setDistrictId(unionOrArea.getThana().getDistrict().getDistrictId());
+                dto.setDistrictName(unionOrArea.getThana().getDistrict().getDistrictName());
+
+                if (unionOrArea.getThana().getDistrict().getDivision() != null) {
+                    dto.setDivisionId(unionOrArea.getThana().getDistrict().getDivision().getDivisionId());
+                    dto.setDivisionName(unionOrArea.getThana().getDistrict().getDivision().getDivisionName());
+                }
+            }
+        }
+
+        return dto;
+    }
+
     private void validateSortProperties(Sort sort) {
         for (Sort.Order order : sort) {
             if (!isValidSortProperty(order.getProperty())) {

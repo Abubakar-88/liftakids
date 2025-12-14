@@ -23,4 +23,7 @@ public interface ThanaRepository extends JpaRepository<Thanas,Long> {
 
     boolean existsByThanaNameAndDistrictDistrictId(String thanaName, Long districtId);
 
+    @Query("SELECT t FROM Thanas t WHERE t.district.districtId IN :districtIds")
+    List<Thanas> findByDistrictIdIn(@Param("districtIds") List<Long> districtIds);
+
 }

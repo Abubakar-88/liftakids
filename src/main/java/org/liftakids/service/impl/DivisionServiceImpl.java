@@ -1,26 +1,43 @@
 package org.liftakids.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.liftakids.dto.district.DistrictResponseDTO;
 import org.liftakids.dto.divison.DivisionDto;
 import org.liftakids.dto.divison.DivisionResponseDTO;
+import org.liftakids.dto.thana.ThanaResponseDTO;
+import org.liftakids.dto.unionOrArea.UnionOrAreaResponseDTO;
+import org.liftakids.entity.address.Districts;
 import org.liftakids.entity.address.Divisions;
+import org.liftakids.entity.address.Thanas;
+import org.liftakids.entity.address.UnionOrArea;
 import org.liftakids.exception.ResourceNotFoundException;
+import org.liftakids.repositories.DistrictRepository;
 import org.liftakids.repositories.DivisionRepository;
+import org.liftakids.repositories.ThanaRepository;
+import org.liftakids.repositories.UnionOrAreaRepository;
 import org.liftakids.service.DivisionService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.internal.bytebuddy.implementation.bytecode.Division;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@CacheConfig(cacheNames = "divisions")
 @RequiredArgsConstructor
 public class DivisionServiceImpl implements DivisionService {
 
     private final DivisionRepository divisionRepository;
     private final ModelMapper modelMapper;
-
+    private final DistrictRepository districtRepository;
+    private final ThanaRepository thanaRepository;
+    private final UnionOrAreaRepository unionRepository;
     @Override
     public DivisionDto create(DivisionDto dto) {
         Divisions division = modelMapper.map(dto, Divisions.class);
@@ -28,12 +45,100 @@ public class DivisionServiceImpl implements DivisionService {
     }
 
     @Override
+    @Cacheable
     public List<DivisionResponseDTO> getAll() {
-        return divisionRepository.findAll()
-                .stream()
-                .map(d -> modelMapper.map(d, DivisionResponseDTO.class))
-                .collect(Collectors.toList());
+        List<Divisions> divisions = divisionRepository.findAll();
+
+        /* ---------- DISTRICTS ---------- */
+        Map<Long, List<Districts>> districtMap = new HashMap<>();
+        List<Districts> allDistricts = new ArrayList<>();
+
+        for (Divisions div : divisions) {
+            List<Districts> districts =
+                    districtRepository.findByDivisionId(div.getDivisionId());
+
+            districtMap.put(div.getDivisionId(), districts);
+            allDistricts.addAll(districts);
+        }
+
+        /* ---------- THANAS ---------- */
+        Map<Long, List<Thanas>> thanaMap = new HashMap<>();
+        List<Thanas> allThanas = new ArrayList<>();
+
+        for (Districts dist : allDistricts) {
+            List<Thanas> thanas =
+                    thanaRepository.findByDistrictId(dist.getDistrictId());
+
+            thanaMap.put(dist.getDistrictId(), thanas);
+            allThanas.addAll(thanas);
+        }
+
+        /* ---------- UNION / AREAS ---------- */
+        Map<Long, List<UnionOrArea>> unionMap = new HashMap<>();
+
+        for (Thanas th : allThanas) {
+            List<UnionOrArea> unions =
+                    unionRepository.findByThanaId(th.getThanaId());
+
+            unionMap.put(th.getThanaId(), unions);
+        }
+        // 🧠 Build hierarchy DTO
+        return divisions.stream().map(div -> {
+            DivisionResponseDTO divDTO = new DivisionResponseDTO();
+            divDTO.setDivisionId(div.getDivisionId());
+            divDTO.setDivisionName(div.getDivisionName());
+
+            List<Districts> divDistricts = districtMap.getOrDefault(div.getDivisionId(), List.of());
+
+            divDistricts.forEach(dist -> {
+                DistrictResponseDTO distDTO = new DistrictResponseDTO();
+                distDTO.setDistrictId(dist.getDistrictId());
+                distDTO.setDistrictName(dist.getDistrictName());
+                distDTO.setDivisionId(divDTO.getDivisionId());
+                distDTO.setDivisionName(divDTO.getDivisionName());
+
+                List<Thanas> distThanas = thanaMap.getOrDefault(dist.getDistrictId(), List.of());
+                distThanas.forEach(th -> {
+                    ThanaResponseDTO thDTO = new ThanaResponseDTO();
+                    thDTO.setThanaId(th.getThanaId());
+                    thDTO.setThanaName(th.getThanaName());
+                    thDTO.setDistrictId(distDTO.getDistrictId());
+                    thDTO.setDistrictName(distDTO.getDistrictName());
+                    thDTO.setDivisionId(divDTO.getDivisionId());
+                    thDTO.setDivisionName(divDTO.getDivisionName());
+
+
+                    List<UnionOrArea> thUnions = unionMap.getOrDefault(th.getThanaId(), List.of());
+                    thUnions.forEach(u -> {
+                        UnionOrAreaResponseDTO uDTO = new UnionOrAreaResponseDTO();
+                        uDTO.setUnionOrAreaId(u.getUnionOrAreaId());
+                        uDTO.setUnionOrAreaName(u.getUnionOrAreaName());
+                        uDTO.setThanaId(thDTO.getThanaId());
+                        uDTO.setThanaName(thDTO.getThanaName());
+                        uDTO.setDistrictId(distDTO.getDistrictId());
+                        uDTO.setDistrictName(distDTO.getDistrictName());
+                        uDTO.setDivisionId(divDTO.getDivisionId());
+                        uDTO.setDivisionName(divDTO.getDivisionName());
+                        thDTO.getUnionOrAreas().add(uDTO);
+                    });
+
+                    distDTO.getThanas().add(thDTO);
+                });
+
+                divDTO.getDistricts().add(distDTO);
+            });
+
+            return divDTO;
+        }).toList();
     }
+//    @Override
+//    @Cacheable
+//    public List<DivisionResponseDTO> getAll() {
+//        return divisionRepository.findAll()
+//                .stream()
+//                .map(d -> modelMapper.map(d, DivisionResponseDTO.class))
+//                .collect(Collectors.toList());
+//    }
 
     @Override
     public List<DivisionDto> createAll(List<DivisionDto> divisionDtos) {

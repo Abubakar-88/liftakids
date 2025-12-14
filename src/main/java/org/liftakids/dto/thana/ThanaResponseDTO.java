@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.liftakids.dto.unionOrArea.UnionOrAreaResponseDTO;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -17,5 +18,5 @@ public class ThanaResponseDTO {
     private String districtName;
     private Long divisionId;
     private String divisionName;
-    private List<UnionOrAreaResponseDTO> unionOrAreas;
+    private List<UnionOrAreaResponseDTO> unionOrAreas = new ArrayList<>();
 }

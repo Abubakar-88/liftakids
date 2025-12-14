@@ -7,7 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.liftakids.dto.thana.ThanaResponseDTO;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -19,5 +21,5 @@ public class DistrictResponseDTO {
     private String divisionName;
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private List<ThanaResponseDTO> thanas;
+    private Set<ThanaResponseDTO> thanas = new HashSet<>();
 }

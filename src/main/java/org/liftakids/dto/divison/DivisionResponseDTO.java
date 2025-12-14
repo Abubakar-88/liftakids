@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.liftakids.dto.district.DistrictResponseDTO;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -13,5 +14,5 @@ import java.util.List;
 public class DivisionResponseDTO {
     private Long divisionId;
     private String divisionName;
-    private List<DistrictResponseDTO> districts;
+    private List<DistrictResponseDTO> districts = new ArrayList<>();
 }
