@@ -1,0 +1,31 @@
+name: Keep Render Server Alive
+on:
+  schedule:
+    # every 10 minute
+    - cron: '*/10 * * * *'
+  # for Manualy
+  workflow_dispatch:
+
+jobs:
+  ping-server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render Server
+        run: |
+          echo "🕐 Pinging server at $(date)"
+          
+          # আপনার এক্সাক্ট URL দিন
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://liftakids.onrender.com/LiftAKids/api/health/wakeup")
+          
+          if [ "$RESPONSE" -eq 200 ]; then
+            echo "✅ Server is awake (Status: $RESPONSE)"
+          else
+            echo "⚠️ Server responded with: $RESPONSE"
+            echo "Trying again in 30 seconds..."
+            sleep 30
+            # Retry
+            RESPONSE2=$(curl -s -o /dev/null -w "%{http_code}" \
+              "https://liftakids.onrender.com/LiftAKids/api/health/wakeup")
+            echo "Retry status: $RESPONSE2"
+          fi
