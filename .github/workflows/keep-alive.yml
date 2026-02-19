@@ -1,65 +1,65 @@
-name: Keep Render Server Alive
-
-on:
-  schedule:
-    # প্রতি ১০ মিনিট পর পর রান করবে
-    - cron: '*/10 * * * *'
-  # ম্যানুয়ালি রান করার জন্য
-  workflow_dispatch:
-
-jobs:
-  ping-server:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check current time
-        run: echo "🕐 Pinging server at $(date)"
-
-      - name: Ping Render Server
-        run: |
-          # সার্ভার ওয়াক আপ করার জন্য GET রিকোয়েস্ট
-          echo "📡 Sending wake-up request..."
-          
-          # প্রথম চেষ্টা
-          HTTP_STATUS=$(curl -s -o response.txt -w "%{http_code}" \
-            -L --connect-timeout 30 --max-time 60 \
-            "https://liftakids.onrender.com/LiftAKids/api/health/wakeup")
-          
-          echo "📊 Response Status: $HTTP_STATUS"
-          
-          if [ "$HTTP_STATUS" -eq 200 ] || [ "$HTTP_STATUS" -eq 201 ] || [ "$HTTP_STATUS" -eq 202 ]; then
-            echo "✅ Server is awake and responding!"
-            cat response.txt
-          elif [ "$HTTP_STATUS" -eq 000 ]; then
-            echo "⚠️ Connection failed - Server might be waking up..."
-            echo "🔄 Waiting 45 seconds for server to wake up..."
-            sleep 45
-          
-            # দ্বিতীয় চেষ্টা
-            echo "📡 Retrying request..."
-            HTTP_STATUS2=$(curl -s -o response2.txt -w "%{http_code}" \
-              -L --connect-timeout 30 --max-time 60 \
-              "https://liftakids.onrender.com/LiftAKids/api/health/wakeup")
-          
-            if [ "$HTTP_STATUS2" -eq 200 ] || [ "$HTTP_STATUS2" -eq 201 ] || [ "$HTTP_STATUS2" -eq 202 ]; then
-              echo "✅ Server is now awake on retry!"
-              cat response2.txt
-            else
-              echo "❌ Server still not responding. Status: $HTTP_STATUS2"
-              exit 1
-            fi
-          else
-            echo "❌ Server responded with error status: $HTTP_STATUS"
-            cat response.txt
-            exit 1
-          fi
-          
-          # ক্লিনআপ
-          rm -f response.txt response2.txt
-
-      - name: Log success
-        if: success()
-        run: echo "✅ Server ping successful at $(date)"
-
-      - name: Log failure
-        if: failure()
-        run: echo "❌ Server ping failed at $(date)"
+#name: Keep Render Server Alive
+#
+#on:
+#  schedule:
+#    # প্রতি ১০ মিনিট পর পর রান করবে
+#    - cron: '*/10 * * * *'
+#  # ম্যানুয়ালি রান করার জন্য
+#  workflow_dispatch:
+#
+#jobs:
+#  ping-server:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Check current time
+#        run: echo "🕐 Pinging server at $(date)"
+#
+#      - name: Ping Render Server
+#        run: |
+#          # সার্ভার ওয়াক আপ করার জন্য GET রিকোয়েস্ট
+#          echo "📡 Sending wake-up request..."
+#
+#          # প্রথম চেষ্টা
+#          HTTP_STATUS=$(curl -s -o response.txt -w "%{http_code}" \
+#            -L --connect-timeout 30 --max-time 60 \
+#            "https://liftakids.onrender.com/LiftAKids/api/health/wakeup")
+#
+#          echo "📊 Response Status: $HTTP_STATUS"
+#
+#          if [ "$HTTP_STATUS" -eq 200 ] || [ "$HTTP_STATUS" -eq 201 ] || [ "$HTTP_STATUS" -eq 202 ]; then
+#            echo "✅ Server is awake and responding!"
+#            cat response.txt
+#          elif [ "$HTTP_STATUS" -eq 000 ]; then
+#            echo "⚠️ Connection failed - Server might be waking up..."
+#            echo "🔄 Waiting 45 seconds for server to wake up..."
+#            sleep 45
+#
+#            # দ্বিতীয় চেষ্টা
+#            echo "📡 Retrying request..."
+#            HTTP_STATUS2=$(curl -s -o response2.txt -w "%{http_code}" \
+#              -L --connect-timeout 30 --max-time 60 \
+#              "https://liftakids.onrender.com/LiftAKids/api/health/wakeup")
+#
+#            if [ "$HTTP_STATUS2" -eq 200 ] || [ "$HTTP_STATUS2" -eq 201 ] || [ "$HTTP_STATUS2" -eq 202 ]; then
+#              echo "✅ Server is now awake on retry!"
+#              cat response2.txt
+#            else
+#              echo "❌ Server still not responding. Status: $HTTP_STATUS2"
+#              exit 1
+#            fi
+#          else
+#            echo "❌ Server responded with error status: $HTTP_STATUS"
+#            cat response.txt
+#            exit 1
+#          fi
+#
+#          # ক্লিনআপ
+#          rm -f response.txt response2.txt
+#
+#      - name: Log success
+#        if: success()
+#        run: echo "✅ Server ping successful at $(date)"
+#
+#      - name: Log failure
+#        if: failure()
+#        run: echo "❌ Server ping failed at $(date)"
