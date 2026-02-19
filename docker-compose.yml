@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  jugjiggasha-backend:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:mysql://srv995.hstgr.io:3306/u611910731_liftakidsdb
+      - SPRING_DATASOURCE_USERNAME=u611910731_liftakids
+      - SPRING_DATASOURCE_PASSWORD=2Fw43z~=d
