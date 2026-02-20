@@ -1,0 +1,30 @@
+2026-02-20T12:40:30.637+06:00  INFO 31016 --- [LiftAKids] [main] o.liftakids.LiftAKidsApplicationTests    : Starting LiftAKidsApplicationTests using Java 17.0.10 with PID 31016 (started by Abu Bakar in C:\Users\siddi\Lift A Kids\LiftAKids - deploy)
+2026-02-20T12:40:30.641+06:00  INFO 31016 --- [LiftAKids] [main] o.liftakids.LiftAKidsApplicationTests    : No active profile set, falling back to 1 default profile: "default"
+2026-02-20T12:40:33.082+06:00  INFO 31016 --- [LiftAKids] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-02-20T12:40:33.401+06:00  INFO 31016 --- [LiftAKids] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 298 ms. Found 15 JPA repository interfaces.
+2026-02-20T12:40:34.756+06:00  INFO 31016 --- [LiftAKids] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-02-20T12:40:34.937+06:00  INFO 31016 --- [LiftAKids] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.15.Final
+2026-02-20T12:40:35.052+06:00  INFO 31016 --- [LiftAKids] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-02-20T12:40:36.082+06:00  INFO 31016 --- [LiftAKids] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-02-20T12:40:36.254+06:00  INFO 31016 --- [LiftAKids] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-02-20T12:40:40.120+06:00  INFO 31016 --- [LiftAKids] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@ce19c86
+2026-02-20T12:40:40.124+06:00  INFO 31016 --- [LiftAKids] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-02-20T12:40:40.433+06:00  WARN 31016 --- [LiftAKids] [main] o.h.e.j.e.i.JdbcEnvironmentInitiator     : HHH000339: Could not obtain connection metadata: java.sql.SQLSyntaxErrorException: Unknown column 'RESERVED' in 'WHERE'
+2026-02-20T12:40:40.489+06:00  WARN 31016 --- [LiftAKids] [main] org.hibernate.orm.deprecation            : HHH90000025: MySQL8Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-02-20T12:40:40.492+06:00  WARN 31016 --- [LiftAKids] [main] org.hibernate.orm.deprecation            : HHH90000026: MySQL8Dialect has been deprecated; use org.hibernate.dialect.MySQLDialect instead
+2026-02-20T12:40:40.525+06:00  INFO 31016 --- [LiftAKids] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-02-20T12:40:43.082+06:00  INFO 31016 --- [LiftAKids] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-02-20T12:41:30.478+06:00  INFO 31016 --- [LiftAKids] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-02-20T12:41:31.120+06:00  INFO 31016 --- [LiftAKids] [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-02-20T12:41:39.064+06:00  WARN 31016 --- [LiftAKids] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-02-20T12:41:40.304+06:00  INFO 31016 --- [LiftAKids] [main] o.liftakids.LiftAKidsApplicationTests    : Started LiftAKidsApplicationTests in 70.56 seconds (process running for 74.885)
+2026-02-20T12:41:41.334+06:00  INFO 31016 --- [LiftAKids] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-02-20T12:41:41.338+06:00  INFO 31016 --- [LiftAKids] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-02-20T12:41:41.358+06:00  INFO 31016 --- [LiftAKids] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
