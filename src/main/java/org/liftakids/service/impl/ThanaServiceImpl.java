@@ -84,7 +84,7 @@ public class ThanaServiceImpl implements ThanaService {
     }
     @Override
     public List<ThanaResponseDTO> getThanasByDistrictId(Long districtId) {
-        return thanaRepository.findByDistrictId(districtId).stream()
+        return thanaRepository.findByDistrictIdWithEagerFetch(districtId).stream()
                 .map(thana -> {
                     ThanaResponseDTO dto = new ThanaResponseDTO();
 
