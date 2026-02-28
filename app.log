@@ -3,3 +3,12 @@
 2026-02-28T10:25:50.866+06:00  WARN 2240 --- [LiftAKids] [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@738a668b (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
 2026-02-28T10:25:50.868+06:00  WARN 2240 --- [LiftAKids] [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@652541dd (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
 2026-02-28T10:25:50.870+06:00  WARN 2240 --- [LiftAKids] [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@46d922d2 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-02-28T12:59:53.601+06:00  INFO 2240 --- [LiftAKids] [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-02-28T12:59:53.806+06:00  INFO 2240 --- [LiftAKids] [scheduling-1] o.l.s.impl.SponsorshipExpiryServiceImpl  : 🔄 Starting sponsorship expiry job...
+2026-02-28T12:59:54.264+06:00  INFO 2240 --- [LiftAKids] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-02-28T12:59:54.295+06:00  INFO 2240 --- [LiftAKids] [scheduling-1] o.l.s.impl.SponsorshipExpiryServiceImpl  : Found 0 expired pending sponsorships
+2026-02-28T12:59:54.297+06:00  INFO 2240 --- [LiftAKids] [scheduling-1] o.l.s.impl.SponsorshipExpiryServiceImpl  : No expired sponsorships found
+2026-02-28T12:59:55.119+06:00  INFO 2240 --- [LiftAKids] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-02-28T12:59:55.221+06:00  INFO 2240 --- [LiftAKids] [scheduling-1] o.l.s.impl.SponsorshipExpiryServiceImpl  : 🧹 Cleaned up 0 old notifications
+2026-02-28T12:59:55.252+06:00  INFO 2240 --- [LiftAKids] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-02-28T12:59:55.280+06:00  INFO 2240 --- [LiftAKids] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
