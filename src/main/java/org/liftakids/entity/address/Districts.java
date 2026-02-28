@@ -25,7 +25,7 @@ public class Districts {
     @JoinColumn(name = "division_id", nullable = false)
     private Divisions division;
 
-    @OneToMany(mappedBy = "district", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "district", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     @JsonIgnore
     private Set<Thanas> thanas = new HashSet<>();
 

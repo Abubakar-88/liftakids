@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -24,8 +25,8 @@ public class Thanas {
     @JsonIgnore
     private Districts district;
 
-    @OneToMany(mappedBy = "thana", cascade = CascadeType.ALL)
-    private List<UnionOrArea> unionOrAreas;
+    @OneToMany(mappedBy = "thana", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true  )
+    private List<UnionOrArea> unionOrAreas = new ArrayList<>();
 
 
 
