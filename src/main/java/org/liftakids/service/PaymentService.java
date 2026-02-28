@@ -4,7 +4,6 @@ import org.liftakids.dto.payment.ManualPaymentRequestDto;
 import org.liftakids.dto.payment.PaymentConfirmationRequestDto;
 import org.liftakids.dto.payment.PaymentRequestDto;
 import org.liftakids.dto.payment.PaymentResponseDto;
-import org.liftakids.entity.Payment;
 import org.springframework.data.domain.Page;
 
 import java.util.List;

@@ -16,6 +16,8 @@ public interface UnionOrAreaRepository extends JpaRepository<UnionOrArea, Long> 
 
     @EntityGraph(attributePaths = {"thana", "thana.district", "thana.district.division"})
     List<UnionOrArea> findByThana_ThanaId(Long thanaId);
+
     @Query("SELECT u FROM UnionOrArea u WHERE u.thana.thanaId = :thanaId")
     List<UnionOrArea> findByThanaId(@Param("thanaId") Long thanaId);
+
 }

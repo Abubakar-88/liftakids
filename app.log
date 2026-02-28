@@ -1,37 +1,5 @@
-2026-02-26T10:37:36.748+06:00  WARN 2240 --- [LiftAKids] [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=11h41m38s991ms722µs300ns).
-2026-02-26T10:37:37.346+06:00  WARN 2240 --- [LiftAKids] [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@6a88eac6 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
-2026-02-26T10:37:37.352+06:00  WARN 2240 --- [LiftAKids] [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@4d0b738c (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
-2026-02-26T10:37:37.354+06:00  WARN 2240 --- [LiftAKids] [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@47eff70 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
-2026-02-26T10:37:42.539+06:00  WARN 2240 --- [LiftAKids] [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@738deb92 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
-2026-02-26T10:37:42.543+06:00  WARN 2240 --- [LiftAKids] [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@7b0fec (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
-2026-02-26T12:01:11.151+06:00  INFO 21788 --- [LiftAKids] [main] o.liftakids.LiftAKidsApplicationTests    : Starting LiftAKidsApplicationTests using Java 17.0.10 with PID 21788 (started by Abu Bakar in C:\Users\siddi\Lift A Kids\LiftAKids - deploy)
-2026-02-26T12:01:11.155+06:00  INFO 21788 --- [LiftAKids] [main] o.liftakids.LiftAKidsApplicationTests    : No active profile set, falling back to 1 default profile: "default"
-2026-02-26T12:01:14.788+06:00  INFO 21788 --- [LiftAKids] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-02-26T12:01:15.225+06:00  INFO 21788 --- [LiftAKids] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 410 ms. Found 15 JPA repository interfaces.
-2026-02-26T12:01:16.731+06:00  INFO 21788 --- [LiftAKids] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2026-02-26T12:01:16.932+06:00  INFO 21788 --- [LiftAKids] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.15.Final
-2026-02-26T12:01:17.060+06:00  INFO 21788 --- [LiftAKids] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2026-02-26T12:01:18.462+06:00  INFO 21788 --- [LiftAKids] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-02-26T12:01:18.579+06:00  WARN 21788 --- [LiftAKids] [main] com.zaxxer.hikari.HikariConfig           : HikariPool-1 - idleTimeout is close to or more than maxLifetime, disabling it.
-2026-02-26T12:01:18.579+06:00  INFO 21788 --- [LiftAKids] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2026-02-26T12:01:20.329+06:00  INFO 21788 --- [LiftAKids] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@9763e61
-2026-02-26T12:01:20.336+06:00  INFO 21788 --- [LiftAKids] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2026-02-26T12:01:20.501+06:00  WARN 21788 --- [LiftAKids] [main] org.hibernate.orm.deprecation            : HHH90000025: MySQL8Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2026-02-26T12:01:20.506+06:00  WARN 21788 --- [LiftAKids] [main] org.hibernate.orm.deprecation            : HHH90000026: MySQL8Dialect has been deprecated; use org.hibernate.dialect.MySQLDialect instead
-2026-02-26T12:01:20.709+06:00  INFO 21788 --- [LiftAKids] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
-	Database driver: undefined/unknown
-	Database version: 8.0
-	Autocommit mode: undefined/unknown
-	Isolation level: undefined/unknown
-	Minimum pool size: undefined/unknown
-	Maximum pool size: undefined/unknown
-2026-02-26T12:01:24.834+06:00  INFO 21788 --- [LiftAKids] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-02-26T12:01:27.299+06:00  INFO 21788 --- [LiftAKids] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-02-26T12:01:28.047+06:00  INFO 21788 --- [LiftAKids] [main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-02-26T12:01:36.404+06:00  WARN 21788 --- [LiftAKids] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-02-26T12:01:39.650+06:00  INFO 21788 --- [LiftAKids] [main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/LiftAKids/actuator'
-2026-02-26T12:01:40.150+06:00  INFO 21788 --- [LiftAKids] [main] o.liftakids.LiftAKidsApplicationTests    : Started LiftAKidsApplicationTests in 29.993 seconds (process running for 33.28)
-2026-02-26T12:01:41.685+06:00  INFO 21788 --- [LiftAKids] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
-2026-02-26T12:01:41.693+06:00  INFO 21788 --- [LiftAKids] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
-2026-02-26T12:01:41.705+06:00  INFO 21788 --- [LiftAKids] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-02-28T10:25:50.822+06:00  WARN 2240 --- [LiftAKids] [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@77fc28b7 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-02-28T10:25:50.863+06:00  WARN 2240 --- [LiftAKids] [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=11h9m5s602ms829µs500ns).
+2026-02-28T10:25:50.866+06:00  WARN 2240 --- [LiftAKids] [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@738a668b (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-02-28T10:25:50.868+06:00  WARN 2240 --- [LiftAKids] [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@652541dd (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.
+2026-02-28T10:25:50.870+06:00  WARN 2240 --- [LiftAKids] [HikariPool-1:housekeeper] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Failed to validate connection com.mysql.cj.jdbc.ConnectionImpl@46d922d2 (No operations allowed after connection closed.). Possibly consider using a shorter maxLifetime value.

@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.liftakids.entity.InstitutionType;
 
+import java.time.LocalDateTime;
+
 
 @Data
 @AllArgsConstructor
@@ -36,6 +38,15 @@ public class UpdateInstitutionDto {
     @NotNull
     @Size(min = 10, max = 15)
     private String phone;
+
+    @NotBlank
+    private String teacherName;
+    @NotBlank
+    private String teacherDesignation;
+
+    @NotBlank
+    private LocalDateTime aboutInstitution;
+
     @NotBlank
     private String villageOrHouse;
 

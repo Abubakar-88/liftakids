@@ -27,4 +27,10 @@ public interface DonorRepository extends JpaRepository<Donor, Long> {
             "JOIN Sponsorship s ON d.donorId = s.donor.donorId " +
             "WHERE s.student.institution.institutionsId = :institutionId")
     List<Donor> findDonorsByInstitution(@Param("institutionId") Long institutionId);
+
+    List<Donor> findAll();
+
+    // Optional: Find active donors
+//    @Query("SELECT d FROM Donor d WHERE d.active = true OR d.status = 'ACTIVE'")
+//    List<Donor> findAllActiveDonors();
 }

@@ -4,9 +4,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.liftakids.entity.Institutions;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 
 @Data
@@ -23,7 +23,7 @@ public class Divisions {
     private String divisionName;
 
     @OneToMany(mappedBy = "division", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Districts> districts;
+    private Set<Districts> districts = new HashSet<>();
 
 
 }

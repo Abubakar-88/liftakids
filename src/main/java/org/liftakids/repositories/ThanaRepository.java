@@ -25,5 +25,4 @@ public interface ThanaRepository extends JpaRepository<Thanas,Long> {
 
     @Query("SELECT t FROM Thanas t WHERE t.district.districtId IN :districtIds")
     List<Thanas> findByDistrictIdIn(@Param("districtIds") List<Long> districtIds);
-
 }

@@ -1,10 +1,8 @@
 package org.liftakids.repositories;
 
-import org.liftakids.dto.student.StudentResponseDto;
 import org.liftakids.entity.PaymentMethod;
 import org.liftakids.entity.Sponsorship;
 import org.liftakids.entity.SponsorshipStatus;
-import org.liftakids.entity.Student;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

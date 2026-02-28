@@ -1,6 +1,5 @@
 package org.liftakids.service.impl;
 
-import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import org.liftakids.dto.contact.ContactReplyDTO;
 import org.liftakids.dto.contact.ContactRequestDTO;
@@ -9,7 +8,6 @@ import org.liftakids.repositories.ContactRepository;
 import org.liftakids.service.ContactService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

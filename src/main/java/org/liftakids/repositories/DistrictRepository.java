@@ -17,6 +17,7 @@ public interface DistrictRepository extends JpaRepository<Districts, Long> {
     @Query("SELECT d FROM Districts d WHERE d.division.divisionId = :divisionId")
     List<Districts> findByDivisionId(@Param("divisionId") Long divisionId);
 
-
+//    @Query("SELECT d FROM Districts d WHERE d.division.divisionId IN :divisionIds")
+//    List<Districts> findByDivisionIds(List<Long> divisionIds);
 
 }

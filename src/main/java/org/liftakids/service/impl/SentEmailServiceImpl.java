@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.liftakids.entity.SentEmail;
 import org.liftakids.repositories.SentEmailRepository;
 import org.liftakids.service.SentEmailService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

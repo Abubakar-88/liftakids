@@ -6,10 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.liftakids.entity.*;
 import org.liftakids.entity.enm.NotificationStatus;
 import org.liftakids.entity.enm.NotificationType;
+import org.liftakids.entity.enm.UserType;
 import org.liftakids.repositories.NotificationRepository;
 import org.liftakids.repositories.SponsorshipRepository;
 import org.liftakids.service.SponsorshipExpiryService;
-import org.liftakids.service.SponsorshipService;
 import org.liftakids.service.Util.EmailService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -88,27 +88,69 @@ public class SponsorshipExpiryServiceImpl implements SponsorshipExpiryService {
 
     private Notification createExpiryNotification(Sponsorship sponsorship) {
         Donor donor = sponsorship.getDonor();
-        Institutions institutions = sponsorship.getStudent().getInstitution();
+        Institutions institution = sponsorship.getStudent().getInstitution();
+        Student student = sponsorship.getStudent();
 
         return Notification.builder()
+                // RECIPIENT INFO
+                .userType(UserType.DONOR)
+                .userId(donor.getDonorId())
                 .donor(donor)
-                .institutions(institutions)
+                .institution(institution)
+
+                // NOTIFICATION CONTENT
                 .title("Sponsorship Expired")
                 .message(String.format(
-                        "Your pending sponsorship for %s (Student ID: %d) has expired because no payment was made within 3 days. " +
+                        "Your pending sponsorship for %s (Student: %s, ID: %d) has expired because no payment was made within 3 days. " +
                                 "Monthly amount: ৳%.2f. You can create a new sponsorship if you still wish to support.",
-                        institutions.getInstitutionName(),
-                        institutions.getInstitutionsId(),
+                        institution.getInstitutionName(),
+                        student.getStudentName(),
+                        student.getStudentId(),
+                        sponsorship.getMonthlyAmount()
+                ))
+                .shortMessage(String.format(
+                        "Sponsorship expired for %s. Amount: ৳%.2f",
+                        institution.getInstitutionName(),
                         sponsorship.getMonthlyAmount()
                 ))
                 .type(NotificationType.SPONSORSHIP_EXPIRED)
+
+                // STATUS & METADATA
                 .status(NotificationStatus.UNREAD)
                 .createdAt(LocalDateTime.now())
+                .inAppSent(true)
+
+                // ACTION & NAVIGATION
+                .actionUrl(String.format("/donor/sponsorships/%d", sponsorship.getId()))
+                .actionText("View Details")
+                .icon("warning")
+
+                // RELATED ENTITY
                 .relatedEntityType("SPONSORSHIP")
                 .relatedEntityId(sponsorship.getId())
-                .actionUrl(String.format("/donor/sponsorships/%d", sponsorship.getId()))
-                .build();
+                .relatedEntityName(String.format("Sponsorship #%d", sponsorship.getId()))
+
+                // PRIORITY & CATEGORY
+                .priority("MEDIUM")
+                .category("FINANCIAL")
+                .tags("sponsorship,expired,payment")
+
+                // SENDER INFO
+                .senderName("System")
+                .senderType("SYSTEM")
+
+                // ADDITIONAL DATA
+                .metadata(String.format(
+                        "{\"sponsorshipId\": %d, \"donorId\": %d, \"institutionId\": %d, \"studentId\": %d, \"amount\": %.2f}",
+                        sponsorship.getId(),
+                        donor.getDonorId(),
+                        institution.getInstitutionsId(),
+                        student.getStudentId(),
+                        sponsorship.getMonthlyAmount()
+                ))
+                .emailSent(true).smsSent(true).pushSent(true).inAppSent(true).build();
     }
+
 
     private void sendExpiryEmail(Sponsorship sponsorship) {
         Donor donor = sponsorship.getDonor();
@@ -178,25 +220,65 @@ public class SponsorshipExpiryServiceImpl implements SponsorshipExpiryService {
     private Notification createReminderNotification(Sponsorship sponsorship) {
         Donor donor = sponsorship.getDonor();
         Institutions institution = sponsorship.getStudent().getInstitution();
+        Student student = sponsorship.getStudent();
 
         return Notification.builder()
+                // RECIPIENT INFORMATION (MUST SET THESE)
+                .userType(UserType.DONOR)
+                .userId(donor.getDonorId())
                 .donor(donor)
-                .institutions(institution)
+                .institution(institution)
+
+                // NOTIFICATION CONTENT
                 .title("Payment Reminder - 1 Day Left")
                 .message(String.format(
-                        "Reminder: Your sponsorship for %s will expire in 1 day if payment is not completed. " +
-                                "Please complete the payment to activate the sponsorship.",
+                        "Reminder: Your sponsorship for %s (Student: %s) will expire in 1 day if payment is not completed. " +
+                                "Monthly amount: ৳%.2f. Please complete the payment to activate the sponsorship.",
+                        institution.getInstitutionName(),
+                        student.getStudentName(),
+                        sponsorship.getMonthlyAmount()
+                ))
+                .shortMessage(String.format(
+                        "Payment reminder: 1 day left for sponsorship of %s",
                         institution.getInstitutionName()
                 ))
                 .type(NotificationType.PAYMENT_REMINDER)
+
+                // STATUS & METADATA
                 .status(NotificationStatus.UNREAD)
                 .createdAt(LocalDateTime.now())
+                .inAppSent(true)
+
+                // ACTION & NAVIGATION
+                .actionUrl(String.format("/donor/payment/%d", sponsorship.getId()))
+                .actionText("Make Payment")
+                .icon("warning")
+
+                // RELATED ENTITY
                 .relatedEntityType("SPONSORSHIP")
                 .relatedEntityId(sponsorship.getId())
-                .actionUrl(String.format("/donor/payment/%d", sponsorship.getId()))
-                .build();
-    }
+                .relatedEntityName(String.format("Sponsorship #%d", sponsorship.getId()))
 
+                // PRIORITY & CATEGORY
+                .priority("HIGH") // Reminder should be HIGH priority
+                .category("FINANCIAL")
+                .tags("sponsorship,reminder,payment,urgent")
+
+                // SENDER INFORMATION
+                .senderName("System")
+                .senderType("SYSTEM")
+
+                // ADDITIONAL DATA
+                .metadata(String.format(
+                        "{\"sponsorshipId\": %d, \"donorId\": %d, \"institutionId\": %d, \"studentId\": %d, \"amount\": %.2f, \"remainingHours\": 24}",
+                        sponsorship.getId(),
+                        donor.getDonorId(),
+                        institution.getInstitutionsId(),
+                        student.getStudentId(),
+                        sponsorship.getMonthlyAmount()
+                ))
+                .emailSent(true).smsSent(true).pushSent(true).build();
+    }
     // Clean up old notifications (30 দিনের পুরোনো notification delete)
     @Override
     @Scheduled(cron = "0 0 3 * * ?") // প্রতিদিন রাত 3টায়

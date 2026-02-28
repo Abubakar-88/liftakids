@@ -28,8 +28,8 @@ public class DistrictServiceImpl implements DistrictService {
 
     private final DistrictRepository districtRepository;
     private final DivisionRepository divisionRepository;
-    private final ModelMapper modelMapper;
     private final ThanaRepository thanaRepository;
+    private final ModelMapper modelMapper;
 
     @Override
     public DistrictDto create(DistrictDto dto) {
@@ -82,20 +82,20 @@ public class DistrictServiceImpl implements DistrictService {
 
     @Override
     public List<DistrictResponseDTO> getDistrictsByDivisionId(Long divisionId) {
-        // 1. Batch  district ids
+        // 1. Batch এ district ids সংগ্রহ করুন
         List<Districts> districts = districtRepository.findByDivisionId(divisionId);
         List<Long> districtIds = districts.stream()
                 .map(Districts::getDistrictId)
                 .collect(Collectors.toList());
 
-        // 2. Single query get thanas
+        // 2. Single query দিয়ে সব thanas নিয়ে আসুন
         List<Thanas> allThanas = thanaRepository.findByDistrictIdIn(districtIds);
 
-        // 3. Map  districtId -> List<Thanas>
+        // 3. Map তৈরি করুন districtId -> List<Thanas>
         Map<Long, List<Thanas>> thanasByDistrict = allThanas.stream()
                 .collect(Collectors.groupingBy(th -> th.getDistrict().getDistrictId()));
 
-        // 4. DTO make
+        // 4. DTO তৈরি করুন
         return districts.stream().map(district -> {
             DistrictResponseDTO dto = new DistrictResponseDTO();
             dto.setDistrictId(district.getDistrictId());
@@ -106,7 +106,7 @@ public class DistrictServiceImpl implements DistrictService {
                 dto.setDivisionName(district.getDivision().getDivisionName());
             }
 
-            // 5. get thanas from map
+            // 5. Map থেকে thanas নিন
             List<Thanas> districtThanas = thanasByDistrict.getOrDefault(
                     district.getDistrictId(),
                     Collections.emptyList()
@@ -127,14 +127,6 @@ public class DistrictServiceImpl implements DistrictService {
             return dto;
         }).collect(Collectors.toList());
     }
-//    @Override
-//    public List<DistrictResponseDTO> getDistrictsByDivisionId(Long divisionId) {
-//        // Now using the correct repository method
-//        List<Districts> districts = districtRepository.findByDivisionId(divisionId);
-//        return districts.stream()
-//                .map(district -> modelMapper.map(district, DistrictResponseDTO.class))
-//                .collect(Collectors.toList());
-//    }
 
     @Override
     public Page<DistrictResponseDTO> getAllDistricts(Pageable pageable) {

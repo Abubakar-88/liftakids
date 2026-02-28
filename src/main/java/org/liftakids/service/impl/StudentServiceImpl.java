@@ -7,7 +7,6 @@ import org.liftakids.dto.student.StudentRequestDto;
 import org.liftakids.dto.student.StudentResponseDto;
 import org.liftakids.dto.student.StudentUpdateRequestDTO;
 import org.liftakids.entity.*;
-
 import org.liftakids.exception.ResourceNotFoundException;
 import org.liftakids.repositories.InstitutionRepository;
 import org.liftakids.repositories.SponsorshipRepository;
@@ -18,7 +17,6 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -150,7 +148,7 @@ public class StudentServiceImpl implements StudentService {
         if (dob == null) return 0;
         return java.time.Period.between(
                 dob.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate(),
-                java.time.LocalDate.now()
+                LocalDate.now()
         ).getYears();
     }
 

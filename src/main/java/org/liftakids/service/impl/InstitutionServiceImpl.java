@@ -1,6 +1,7 @@
 package org.liftakids.service.impl;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.liftakids.dto.district.DistrictResponseDTO;
 import org.liftakids.dto.divison.DivisionResponseDTO;
@@ -13,12 +14,17 @@ import org.liftakids.entity.address.Districts;
 import org.liftakids.entity.address.Divisions;
 import org.liftakids.entity.address.Thanas;
 import org.liftakids.entity.address.UnionOrArea;
-
+import org.liftakids.entity.enm.InstitutionStatus;
+import org.liftakids.entity.enm.NotificationType;
+import org.liftakids.exception.DataTruncationException;
 import org.liftakids.exception.ResourceNotFoundException;
 import org.liftakids.repositories.*;
 import org.liftakids.service.InstitutionService;
+import org.liftakids.service.NotificationService;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +34,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,11 +46,13 @@ public class InstitutionServiceImpl implements InstitutionService {
     private final DistrictRepository districtRepository;
     private final ThanaRepository thanaRepository;
     private final SponsorshipRepository sponsorshipRepository;
-
+     private final AdminRepository adminRepository;
     private final InstitutionRepository institutionRepository;
     private final ModelMapper modelMapper;
+    private final NotificationService notificationService;
+    private final SystemAdminRepository systemAdminRepository;
 
-    private static final Logger log = Logger.getLogger(InstitutionServiceImpl.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(InstitutionServiceImpl.class.getName());
 
     @Override
     public InstitutionResponseDto createInstitution(InstitutionRequestDto requestDto) {
@@ -71,11 +78,13 @@ public class InstitutionServiceImpl implements InstitutionService {
         institution.setUnionOrArea(unionOrArea);
         institution.setRegistrationDate(LocalDateTime.now());
         institution.setUpdateDate(LocalDateTime.now());
-
+        institution.setStatus(InstitutionStatus.PENDING);
         // Save institution
-        Institutions saved = institutionRepository.save(institution);
+        Institutions savedInstitution  = institutionRepository.save(institution);
 
-        return convertToDto(saved);
+        notificationService.sendInstitutionRegistrationNotification(savedInstitution );
+
+        return convertToDto(savedInstitution );
     }
 
 
@@ -112,6 +121,9 @@ public class InstitutionServiceImpl implements InstitutionService {
         InstitutionResponseDto institutionDto = convertToDto(institution);
         return new LoginResponseDto(true, "Login successful", institutionDto);
     }
+
+
+
     // Filtered (no pagination)
     @Override
     public List<InstitutionBasicResponse> getByUnionOrArea(Long unionOrAreaId) {
@@ -127,9 +139,6 @@ public class InstitutionServiceImpl implements InstitutionService {
                 .map(institution -> modelMapper.map(institution, InstitutionResponseDto.class))
                 .collect(Collectors.toList());
     }
-
-
-
 
     public Page<InstitutionBasicResponse> getAllInstitutions(Pageable pageable) {
         validateSortProperties(pageable.getSort());
@@ -148,9 +157,40 @@ public class InstitutionServiceImpl implements InstitutionService {
         // Basic fields
         response.setInstitutionsId(institution.getInstitutionsId());
         response.setInstitutionName(institution.getInstitutionName());
+        // Manually set the location IDs
+        if (institution.getDivision() != null) {
+            response.setDivisionId(institution.getDivision().getDivisionId());
+        }
+
+        if (institution.getDistrict() != null) {
+            response.setDistrictId(institution.getDistrict().getDistrictId());
+        }
+
+        if (institution.getThana() != null) {
+            response.setThanaId(institution.getThana().getThanaId());
+        }
+
+        if (institution.getUnionOrArea() != null) {
+            response.setUnionOrAreaId(institution.getUnionOrArea().getUnionOrAreaId());
+        }
+
         response.setType(institution.getType());
+        response.setStatus(institution.getStatus());
+        response.setApproved(institution.getIsApproved());
+        response.setApprovedBy(institution.getApprovedBy());
+        response.setApprovalDate(institution.getApprovalDate());
+        response.setApprovalNotes(institution.getApprovalNotes());
+        response.setRejectedBy(institution.getRejectedBy());
+        response.setRejectionReason(institution.getRejectionReason());
+        response.setRejectionDate(institution.getRejectionDate());
+        response.setSuspendedBy(institution.getSuspendedBy());
+        response.setSuspendedReason(institution.getSuspendedReason());
+        response.setSuspendedDate(institution.getSuspendedDate());
         response.setEmail(institution.getEmail());
         response.setPhone(institution.getPhone());
+        response.setTeacherName(institution.getTeacherName());
+        response.setTeacherDesignation(institution.getTeacherDesignation());
+        response.setAboutInstitution(institution.getAboutInstitution());
         response.setVillageOrHouse(institution.getVillageOrHouse());
 
         // Manual mapping for location objects
@@ -255,12 +295,39 @@ public class InstitutionServiceImpl implements InstitutionService {
 
 
     @Override
+    @Transactional()
     public InstitutionResponseDto getInstitutionById(Long id) {
-        Institutions institution = institutionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Institution not found with id " + id));
+//        Institutions institution = institutionRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Institution not found with id " + id));
+//
+//        return modelMapper.map(institution, InstitutionResponseDto.class);
 
-        return modelMapper.map(institution, InstitutionResponseDto.class);
+        Institutions institution = institutionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Institution not found with id " + id));
+
+        // Map basic properties
+        InstitutionResponseDto dto = modelMapper.map(institution, InstitutionResponseDto.class);
+
+        // Manually set the location IDs
+        if (institution.getDivision() != null) {
+            dto.setDivisionId(institution.getDivision().getDivisionId());
+        }
+
+        if (institution.getDistrict() != null) {
+            dto.setDistrictId(institution.getDistrict().getDistrictId());
+        }
+
+        if (institution.getThana() != null) {
+            dto.setThanaId(institution.getThana().getThanaId());
+        }
+
+        if (institution.getUnionOrArea() != null) {
+            dto.setUnionOrAreaId(institution.getUnionOrArea().getUnionOrAreaId());
+        }
+
+        return dto;
     }
+
     @Override
     public InstitutionResponseDto updateInstitution(Long id, UpdateInstitutionDto requestDto) {
         Institutions existing = institutionRepository.findById(id)
@@ -286,13 +353,13 @@ public class InstitutionServiceImpl implements InstitutionService {
         institutionRepository.deleteById(id);
     }
 
-    @Override
-    public List<InstitutionResponseDto> getApprovedInstitutions() {
-        return institutionRepository.findByApprovedTrue()
-                .stream()
-                .map(institution -> modelMapper.map(institution, InstitutionResponseDto.class))
-                .collect(Collectors.toList());
-    }
+//    @Override
+//    public List<InstitutionResponseDto> getApprovedInstitutions() {
+//        return institutionRepository.findByApprovedByTrue()
+//                .stream()
+//                .map(institution -> modelMapper.map(institution, InstitutionResponseDto.class))
+//                .collect(Collectors.toList());
+//    }
 
     @Override
     public List<InstitutionResponseDto> getInstitutionsByType(String type) {
@@ -403,6 +470,255 @@ public class InstitutionServiceImpl implements InstitutionService {
 
         return dto;
     }
+
+
+
+
+
+// Institution Satus Update Method
+
+    @Override
+    @Transactional
+    public InstitutionResponseDto approveInstitution(Long institutionId, Long adminId, String approvalNotes) {
+        log.info("=== APPROVE INSTITUTION START ===");
+        log.info("Institution ID: {}, Admin ID: {}", institutionId, adminId);
+
+        Institutions institution = institutionRepository.findById(institutionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Institution not found with ID: " + institutionId));
+
+        SystemAdmin admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found with ID: " + adminId));
+
+        // ✅ Log current state
+        log.info("Current status: {}", institution.getStatus());
+        log.info("Current status class: {}", institution.getStatus() != null ? institution.getStatus().getClass() : "null");
+        log.info("Current isApproved: {}", institution.getIsApproved());
+
+        // ✅ Log what we're about to set
+        log.info("Setting status to enum: {}", InstitutionStatus.APPROVED);
+        log.info("Enum name: {}, length: {}",
+                InstitutionStatus.APPROVED.name(),
+                InstitutionStatus.APPROVED.name().length());
+
+        // Use the helper method from entity
+        institution.approve(admin, approvalNotes);
+
+        // ✅ Log after setting
+        log.info("After approve() - Status: {}", institution.getStatus());
+        log.info("After approve() - Status type: {}",
+                institution.getStatus() != null ? institution.getStatus().getClass().getName() : "null");
+
+        try {
+            Institutions savedInstitution = institutionRepository.save(institution);
+            log.info("✅ Save successful!");
+            log.info("Saved institution status: {}", savedInstitution.getStatus());
+
+            // Send approval notification
+            notificationService.sendInstitutionApprovedNotification(savedInstitution, admin);
+            log.info("Notification sent for institution {} approved by admin {}",
+                    institutionId, adminId);
+
+            log.info("=== APPROVE INSTITUTION END ===");
+            return convertToDto(savedInstitution);
+
+        } catch (DataIntegrityViolationException e) {
+            log.error("❌ DataIntegrityViolationException: {}", e.getMessage());
+            log.error("❌ Root cause: {}", getRootCause(e).getMessage());
+            throw new DataTruncationException("Failed to save institution: " + getRootCause(e).getMessage());
+        } catch (Exception e) {
+            log.error("❌ Unexpected error: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+    private Throwable getRootCause(Throwable throwable) {
+        Throwable rootCause = throwable;
+        while (rootCause.getCause() != null && rootCause.getCause() != rootCause) {
+            rootCause = rootCause.getCause();
+        }
+        return rootCause;
+    }
+
+
+
+@Override
+public List<InstitutionResponseDto> getApprovedInstitutions() {
+    return institutionRepository.findByStatus(InstitutionStatus.APPROVED)
+            .stream()
+            .map(this::convertToResponseDto)
+            .collect(Collectors.toList());
+}
+
+    @Override
+    @Transactional
+    public InstitutionResponseDto activateInstitution(Long institutionId, Long adminId) {
+        Institutions institution = institutionRepository.findById(institutionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Institution not found"));
+
+        SystemAdmin admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
+
+        institution.setStatus(InstitutionStatus.ACTIVE);
+        institution.setUpdateDate(LocalDateTime.now());
+
+        Institutions savedInstitution = institutionRepository.save(institution);
+
+        // Send activation notification
+        notificationService.createInstitutionNotification(
+                savedInstitution,
+                "Account Activated",
+                String.format("Your account has been activated by Admin %s. You can now login.",
+                        admin.getName()),
+                NotificationType.INSTITUTION_APPROVED,
+                "/login",
+                "INSTITUTION",
+                savedInstitution.getInstitutionsId()
+        );
+
+        log.info("Institution " + institutionId + " activated by admin " + adminId);
+
+        return convertToDto(savedInstitution);
+    }
+    @Override
+    @Transactional
+    public InstitutionResponseDto rejectInstitution(Long institutionId, Long adminId, String rejectionReason) {
+        // Find institution
+        Institutions institution = institutionRepository.findById(institutionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Institution not found with ID: " + institutionId));
+
+        // Find admin
+        SystemAdmin admin = systemAdminRepository.findById(adminId)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found with ID: " + adminId));
+
+        // Reject institution
+        institution.setStatus(InstitutionStatus.REJECTED);
+        institution.setRejectionReason(rejectionReason);
+        institution.setRejectedBy(admin);
+        institution.setRejectionDate(LocalDateTime.now());
+        institution.setUpdateDate(LocalDateTime.now());
+
+        Institutions savedInstitution = institutionRepository.save(institution);
+
+        // Send rejection notification
+        notificationService.sendInstitutionRejectedNotification(savedInstitution, admin, rejectionReason);
+
+
+        log.info("Institution " + institutionId + " rejected by admin " + adminId);
+        return convertToResponseDto(savedInstitution);
+    }
+//    @Override
+//    public InstitutionResponseDto rejectInstitutionAndGet(Long institutionId, Long adminId, String rejectionReason) {
+//        // This is an alias for rejectInstitution method
+//        return rejectInstitution(institutionId, adminId, rejectionReason);
+//    }
+
+    // Helper methods
+
+    private InstitutionResponseDto convertToResponseDto(Institutions institution) {
+        InstitutionResponseDto dto = modelMapper.map(institution, InstitutionResponseDto.class);
+
+        // Set location IDs
+        if (institution.getDivision() != null) {
+            dto.setDivisionId(institution.getDivision().getDivisionId());
+        }
+        if (institution.getDistrict() != null) {
+            dto.setDistrictId(institution.getDistrict().getDistrictId());
+        }
+        if (institution.getThana() != null) {
+            dto.setThanaId(institution.getThana().getThanaId());
+        }
+        if (institution.getUnionOrArea() != null) {
+            dto.setUnionOrAreaId(institution.getUnionOrArea().getUnionOrAreaId());
+        }
+
+        // Set admin information if available
+        if (institution.getApprovedBy() != null) {
+            dto.setApproved(true);
+            dto.setApprovedBy(institution.getApprovedBy());
+        }
+
+        return dto;
+    }
+    @Override
+    @Transactional
+    public InstitutionResponseDto suspendInstitution(Long institutionId, Long adminId, String suspensionReason) {
+        // Find institution
+        Institutions institution = institutionRepository.findById(institutionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Institution not found with ID: " + institutionId));
+
+        // Find admin
+        SystemAdmin admin = systemAdminRepository.findById(adminId)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found with ID: " + adminId));
+
+        // Suspend institution
+        institution.setStatus(InstitutionStatus.SUSPENDED);
+        institution.setSuspendedReason(suspensionReason);
+        institution.setSuspendedBy(admin);
+        institution.setSuspendedDate(LocalDateTime.now());
+        institution.setUpdateDate(LocalDateTime.now());
+
+        Institutions savedInstitution = institutionRepository.save(institution);
+
+        // Send suspension notification
+        notificationService.createInstitutionNotification(
+                savedInstitution,
+                "Account Suspended",
+                String.format("Your account has been suspended by Admin %s. Reason: %s",
+                        admin.getName(), suspensionReason),
+                NotificationType.INSTITUTION_SUSPENDED,
+                "/contact-support",
+                "INSTITUTION",
+                savedInstitution.getInstitutionsId()
+        );
+        log.info("Institution " + institutionId + " suspended by admin " + adminId);
+
+        return convertToResponseDto(savedInstitution);
+    }
+
+    // InstitutionServiceImpl.java
+
+
+        @Override
+        @Transactional()
+        public StatusStatisticsDto getStatusStatistics() {
+            log.info("Fetching institution status statistics");
+
+            try {
+                // Method 1: Using individual counts (more reliable)
+                Long total = countAllInstitutions();
+               Long approved = institutionRepository.countByStatus(InstitutionStatus.APPROVED);
+               // Long pending = institutionRepository.countByStatus(InstitutionStatus.PENDING);
+                Long rejected = institutionRepository.countByStatus(InstitutionStatus.REJECTED);
+                Long suspended = institutionRepository.countByStatus(InstitutionStatus.SUSPENDED);
+
+                // Method 2: Alternative using isApproved field
+                // Long approved = institutionRepository.countByIsApproved(true);
+                 Long pending = total - approved - rejected - suspended;
+
+                StatusStatisticsDto stats = new StatusStatisticsDto();
+                stats.setTotal(total != null ? total : 0L);
+                stats.setApproved(approved != null ? approved : 0L);
+                stats.setPending(pending != null ? pending : 0L);
+                stats.setRejected(rejected != null ? rejected : 0L);
+                stats.setSuspended(suspended != null ? suspended : 0L);
+
+                log.info("Statistics fetched - Total: {}, Approved: {}, Pending: {}, Rejected: {}, Suspended: {}",
+                        stats.getTotal(), stats.getApproved(), stats.getPending(),
+                        stats.getRejected(), stats.getSuspended());
+
+                return stats;
+
+            } catch (Exception e) {
+                log.error("Error fetching status statistics: {}", e.getMessage());
+                // Return empty statistics in case of error
+                return new StatusStatisticsDto(0L, 0L, 0L, 0L, 0L);
+            }
+        }
+
+        // Helper method if countAll() doesn't exist
+        private Long countAllInstitutions() {
+            return institutionRepository.count();
+        }
+
 
 
 }

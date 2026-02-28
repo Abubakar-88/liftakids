@@ -17,9 +17,7 @@ import org.liftakids.repositories.ThanaRepository;
 import org.liftakids.repositories.UnionOrAreaRepository;
 import org.liftakids.service.DivisionService;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.internal.bytebuddy.implementation.bytecode.Division;
 import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -38,6 +36,7 @@ public class DivisionServiceImpl implements DivisionService {
     private final DistrictRepository districtRepository;
     private final ThanaRepository thanaRepository;
     private final UnionOrAreaRepository unionRepository;
+
     @Override
     public DivisionDto create(DivisionDto dto) {
         Divisions division = modelMapper.map(dto, Divisions.class);
@@ -45,7 +44,6 @@ public class DivisionServiceImpl implements DivisionService {
     }
 
     @Override
-    @Cacheable
     public List<DivisionResponseDTO> getAll() {
         List<Divisions> divisions = divisionRepository.findAll();
 
@@ -84,7 +82,7 @@ public class DivisionServiceImpl implements DivisionService {
         }
         // 🧠 Build hierarchy DTO
         return divisions.stream().map(div -> {
-            DivisionResponseDTO divDTO = new DivisionResponseDTO();
+            DivisionResponseDTO  divDTO = new DivisionResponseDTO();
             divDTO.setDivisionId(div.getDivisionId());
             divDTO.setDivisionName(div.getDivisionName());
 
@@ -130,16 +128,82 @@ public class DivisionServiceImpl implements DivisionService {
 
             return divDTO;
         }).toList();
-    }
-//    @Override
-//    @Cacheable
-//    public List<DivisionResponseDTO> getAll() {
 //        return divisionRepository.findAll()
 //                .stream()
 //                .map(d -> modelMapper.map(d, DivisionResponseDTO.class))
 //                .collect(Collectors.toList());
-//    }
+    }
 
+
+//    @Override
+//    @Cacheable
+//    public List<DivisionResponseDTO> getAll() {
+//        List<Divisions> divisions = divisionRepository.findAllBasic();
+//
+//        return divisions.stream()
+//                .map(this::convertToDTO)
+//                .collect(Collectors.toList());
+//    }
+//    private DivisionResponseDTO convertToDTO(Divisions division) {
+//        DivisionResponseDTO dto = new DivisionResponseDTO();
+//        dto.setDivisionId(division.getDivisionId());
+//        dto.setDivisionName(division.getDivisionName());
+//
+//        List<DistrictResponseDTO> districtDTOs = division.getDistricts().stream()
+//                .map(district -> {
+//                    DistrictResponseDTO districtDTO = new DistrictResponseDTO();
+//                    districtDTO.setDistrictId(district.getDistrictId());
+//                    districtDTO.setDistrictName(district.getDistrictName());
+//                    districtDTO.setDivisionId(division.getDivisionId());
+//                    districtDTO.setDivisionName(division.getDivisionName());
+//
+//                    // Only process thanas if they exist and we need them
+//                    if (district.getThanas() != null && !district.getThanas().isEmpty()) {
+//                        List<ThanaResponseDTO> thanaDTOs = district.getThanas().stream()
+//                                .map(thana -> {
+//                                    ThanaResponseDTO thanaDTO = new ThanaResponseDTO();
+//                                    thanaDTO.setThanaId(thana.getThanaId());
+//                                    thanaDTO.setThanaName(thana.getThanaName());
+//                                    thanaDTO.setDistrictId(district.getDistrictId());
+//                                    thanaDTO.setDistrictName(district.getDistrictName());
+//                                    thanaDTO.setDivisionId(division.getDivisionId());
+//                                    thanaDTO.setDivisionName(division.getDivisionName());
+//
+//                                    if (thana.getUnionOrAreas() != null && !thana.getUnionOrAreas().isEmpty()) {
+//                                        List<UnionOrAreaResponseDTO> unionDTOs = thana.getUnionOrAreas().stream()
+//                                                .map(union -> {
+//                                                    UnionOrAreaResponseDTO unionDTO = new UnionOrAreaResponseDTO();
+//                                                    unionDTO.setUnionOrAreaId(union.getUnionOrAreaId());
+//                                                    unionDTO.setUnionOrAreaName(union.getUnionOrAreaName());
+//                                                    unionDTO.setThanaName(thana.getThanaName());
+//                                                    unionDTO.setThanaId(thana.getThanaId());
+//                                                    unionDTO.setDistrictId(district.getDistrictId());
+//                                                    unionDTO.setDistrictName(district.getDistrictName());
+//                                                    unionDTO.setDivisionId(division.getDivisionId());
+//                                                    unionDTO.setDivisionName(division.getDivisionName());
+//                                                    return unionDTO;
+//                                                })
+//                                                .collect(Collectors.toList());
+//                                        thanaDTO.setUnionOrAreas(unionDTOs);
+//                                    } else {
+//                                        thanaDTO.setUnionOrAreas(Collections.emptyList());
+//                                    }
+//
+//                                    return thanaDTO;
+//                                })
+//                                .collect(Collectors.toList());
+//                        districtDTO.setThanas(thanaDTOs);
+//                    } else {
+//                        districtDTO.setThanas(Collections.emptyList());
+//                    }
+//
+//                    return districtDTO;
+//                })
+//                .collect(Collectors.toList());
+//
+//        dto.setDistricts(districtDTOs);
+//        return dto;
+//    }
     @Override
     public List<DivisionDto> createAll(List<DivisionDto> divisionDtos) {
         List<Divisions> divisions = divisionDtos.stream()

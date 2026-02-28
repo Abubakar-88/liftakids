@@ -1,6 +1,5 @@
 package org.liftakids.service;
 
-import org.liftakids.dto.payment.PaymentResponseDto;
 import org.liftakids.dto.sponsorship.SponsorshipRequestDto;
 import org.liftakids.dto.sponsorship.SponsorshipResponseDto;
 import org.liftakids.dto.sponsorship.SponsorshipSearchRequest;

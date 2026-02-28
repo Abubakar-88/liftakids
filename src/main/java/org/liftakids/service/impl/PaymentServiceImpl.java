@@ -6,7 +6,6 @@ import org.liftakids.dto.payment.ManualPaymentRequestDto;
 import org.liftakids.dto.payment.PaymentConfirmationRequestDto;
 import org.liftakids.dto.payment.PaymentRequestDto;
 import org.liftakids.dto.payment.PaymentResponseDto;
-import org.liftakids.dto.sponsorship.SponsorshipResponseDto;
 import org.liftakids.entity.*;
 import org.liftakids.exception.BusinessException;
 import org.liftakids.exception.ResourceNotFoundException;

@@ -5,10 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.liftakids.exception.BusinessException;
 
-import java.time.LocalDate;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
@@ -59,6 +58,11 @@ public class Payment {
     @Column(name = "card_last_four")
     private String cardLastFour;
 
+    @Column(name = "payer_email")
+    private String payerEmail;
+
+    @Column(name = "payer_phone")
+    private String payerPhone;
 
     @Column(name = "payment_confirmation_message")
     private String confirmationMessage;

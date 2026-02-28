@@ -5,9 +5,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.liftakids.entity.Institutions;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -27,7 +27,7 @@ public class Districts {
 
     @OneToMany(mappedBy = "district", cascade = CascadeType.ALL)
     @JsonIgnore
-    private List<Thanas> thanas;
+    private Set<Thanas> thanas = new HashSet<>();
 
 
 }

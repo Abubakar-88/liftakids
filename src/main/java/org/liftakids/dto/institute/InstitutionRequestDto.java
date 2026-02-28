@@ -1,6 +1,5 @@
 package org.liftakids.dto.institute;
 
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -48,6 +47,9 @@ public class InstitutionRequestDto {
 
     @NotBlank
     private String password;
+
+    @NotBlank
+    private String aboutInstitution;
 
     private Boolean approved;
 }
