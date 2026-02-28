@@ -61,7 +61,7 @@ public class ThanaServiceImpl implements ThanaService {
 
     @Override
     public Page<ThanaResponseDTO> getAllThanas(Pageable pageable) {
-        Page<Thanas> thanas = thanaRepository.findAll(pageable);
+        Page<Thanas> thanas = thanaRepository.findAllWithFetch(pageable);
         return thanas.map(this::mapToDTO);
     }
 

@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.liftakids.dto.district.DistrictDto;
 import org.liftakids.dto.district.DistrictResponseDTO;
 import org.liftakids.dto.thana.ThanaResponseDTO;
+import org.liftakids.dto.unionOrArea.UnionOrAreaResponseDTO;
 import org.liftakids.entity.address.Districts;
 import org.liftakids.entity.address.Divisions;
 import org.liftakids.entity.address.Thanas;
+import org.liftakids.entity.address.UnionOrArea;
 import org.liftakids.repositories.DistrictRepository;
 import org.liftakids.repositories.DivisionRepository;
 import org.liftakids.repositories.ThanaRepository;
@@ -127,11 +129,98 @@ public class DistrictServiceImpl implements DistrictService {
             return dto;
         }).collect(Collectors.toList());
     }
-
     @Override
     public Page<DistrictResponseDTO> getAllDistricts(Pageable pageable) {
         Page<Districts> districts = districtRepository.findAll(pageable);
-        return districts.map(district -> modelMapper.map(district, DistrictResponseDTO.class));
+
+        return districts.map(district -> {
+            DistrictResponseDTO dto = new DistrictResponseDTO();
+
+            // Basic District fields
+            dto.setDistrictId(district.getDistrictId());
+            dto.setDistrictName(district.getDistrictName());
+
+            // Division fields
+            if (district.getDivision() != null) {
+                dto.setDivisionId(district.getDivision().getDivisionId());
+                dto.setDivisionName(district.getDivision().getDivisionName());
+            }
+
+            // Thanas mapping
+            if (district.getThanas() != null && !district.getThanas().isEmpty()) {
+                Set<ThanaResponseDTO> thanaDTOs = district.getThanas().stream()
+                        .map(this::convertToThanaDTO)
+                        .collect(Collectors.toSet());
+                dto.setThanas(thanaDTOs);
+            }
+
+            return dto;
+        });
     }
+
+    private ThanaResponseDTO convertToThanaDTO(Thanas thana) {
+        ThanaResponseDTO dto = new ThanaResponseDTO();
+
+        // Thana basic fields
+        dto.setThanaId(thana.getThanaId());
+        dto.setThanaName(thana.getThanaName());
+
+        // District fields
+        if (thana.getDistrict() != null) {
+            dto.setDistrictId(thana.getDistrict().getDistrictId());
+            dto.setDistrictName(thana.getDistrict().getDistrictName());
+
+            // Division fields through district
+            if (thana.getDistrict().getDivision() != null) {
+                dto.setDivisionId(thana.getDistrict().getDivision().getDivisionId());
+                dto.setDivisionName(thana.getDistrict().getDivision().getDivisionName());
+            }
+        }
+
+        // UnionOrAreas mapping
+        if (thana.getUnionOrAreas() != null && !thana.getUnionOrAreas().isEmpty()) {
+            List<UnionOrAreaResponseDTO> unionOrAreaDTOs = thana.getUnionOrAreas().stream()
+                    .map(this::convertToUnionOrAreaDTO)
+                    .collect(Collectors.toList());
+            dto.setUnionOrAreas(unionOrAreaDTOs);
+        }
+
+        return dto;
+    }
+
+    private UnionOrAreaResponseDTO convertToUnionOrAreaDTO(UnionOrArea unionOrArea) {
+        UnionOrAreaResponseDTO dto = new UnionOrAreaResponseDTO();
+
+        // Union/Area basic fields
+        dto.setUnionOrAreaId(unionOrArea.getUnionOrAreaId());
+        dto.setUnionOrAreaName(unionOrArea.getUnionOrAreaName());
+
+        // Thana fields
+        if (unionOrArea.getThana() != null) {
+            Thanas thana = unionOrArea.getThana();
+            dto.setThanaId(thana.getThanaId());
+            dto.setThanaName(thana.getThanaName());
+
+            // District fields through thana
+            if (thana.getDistrict() != null) {
+                Districts district = thana.getDistrict();
+                dto.setDistrictId(district.getDistrictId());
+                dto.setDistrictName(district.getDistrictName());
+
+                // Division fields through district
+                if (district.getDivision() != null) {
+                    dto.setDivisionId(district.getDivision().getDivisionId());
+                    dto.setDivisionName(district.getDivision().getDivisionName());
+                }
+            }
+        }
+
+        return dto;
+    }
+//    @Override
+//    public Page<DistrictResponseDTO> getAllDistricts(Pageable pageable) {
+//        Page<Districts> districts = districtRepository.findAll(pageable);
+//        return districts.map(district -> modelMapper.map(district, DistrictResponseDTO.class));
+//    }
 
 }
