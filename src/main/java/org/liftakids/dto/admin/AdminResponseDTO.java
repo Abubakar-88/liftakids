@@ -9,5 +9,5 @@ public class AdminResponseDTO {
     private String email;
     private String username;
     private boolean active;
-    private int approvedInstitutionsCount;
+   // private int approvedInstitutionsCount;
 }

@@ -313,10 +313,10 @@ public class AdminServiceImpl implements AdminService {
         dto.setEmail(admin.getEmail());
         dto.setUsername(admin.getUsername());
         dto.setActive(admin.isActive());
-        dto.setApprovedInstitutionsCount(
-                admin.getApprovedInstitutions() != null ?
-                        admin.getApprovedInstitutions().size() : 0
-        );
+//        dto.setApprovedInstitutionsCount(
+//                admin.getApprovedInstitutions() != null ?
+//                        admin.getApprovedInstitutions().size() : 0
+//        );
         return dto;
     }
 
