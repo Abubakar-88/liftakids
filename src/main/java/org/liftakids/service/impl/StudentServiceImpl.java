@@ -38,6 +38,7 @@ public class StudentServiceImpl implements StudentService {
     private final SponsorshipRepository sponsorshipRepository;
     private final Logger log = LoggerFactory.getLogger(StudentService.class);
 
+    @Transactional
     @Override
     public StudentResponseDto createStudent(StudentRequestDto requestDto, MultipartFile image) throws IOException {
 
@@ -103,6 +104,7 @@ public class StudentServiceImpl implements StudentService {
         return modelMapper.map(updatedStudent, StudentResponseDto.class);
     }
 
+    @Transactional
     @Override
     public StudentResponseDto getStudentById(Long id) {
         Student student = studentRepository.findById(id)
@@ -128,7 +130,7 @@ public class StudentServiceImpl implements StudentService {
         response.setSponsoredAmount(sponsored);
         return response;
     }
-
+    @Transactional
     @Override
     public List<StudentResponseDto> getAllStudents() {
         return studentRepository.findAll().stream()
@@ -151,7 +153,7 @@ public class StudentServiceImpl implements StudentService {
                 LocalDate.now()
         ).getYears();
     }
-
+    @Transactional
     @Override
     public Page<StudentResponseDto> getAllStudents(Pageable pageable) {
         Page<Student> studentPage = studentRepository.findAllWithSponsorships(pageable);
@@ -223,6 +225,7 @@ public class StudentServiceImpl implements StudentService {
 //            return dto;
 //        });
 //    }
+@Transactional
 @Override
 public List<StudentResponseDto> getStudentsByInstitution(Long institutionId) {
     // Check if institution exists
@@ -241,6 +244,7 @@ public List<StudentResponseDto> getStudentsByInstitution(Long institutionId) {
             .map(this::convertToStudentResponseDto)
             .collect(Collectors.toList());
 }
+    @Transactional
     @Override
     public Page<StudentResponseDto> getStudentsByInstitution(Long institutionId, Pageable pageable) {
         // Verify institution exists
@@ -404,6 +408,8 @@ public List<StudentResponseDto> getStudentsByInstitution(Long institutionId) {
 
         return dto;
     }
+    @Transactional
+    @Override
     public List<StudentResponseDto> searchStudentsByInstitution(
             Long institutionId,
             String studentName,
@@ -424,7 +430,7 @@ public List<StudentResponseDto> getStudentsByInstitution(Long institutionId) {
     }
 
 
-
+    @Transactional
     @Override
     public List<StudentResponseDto> searchStudents(String studentName, String guardianName, String gender, String contactNumber) {
         List<Student> students = studentRepository.searchStudents(studentName, guardianName,contactNumber);
@@ -458,6 +464,7 @@ public void deleteStudent(Long studentId) {
     studentRepository.delete(student);
 }
 
+    @Transactional
     @Override
     public List<StudentResponseDto> getTop3UnsponsoredUrgentStudents() {
         List<Student> students = studentRepository.findTop3UnsponsoredUrgentStudents();

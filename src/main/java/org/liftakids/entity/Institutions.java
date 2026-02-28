@@ -13,6 +13,7 @@ import org.liftakids.entity.address.UnionOrArea;
 import org.liftakids.entity.enm.InstitutionStatus;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -118,9 +119,9 @@ public class Institutions {
     @Column(name = "about_institution", nullable = false, length = 1500)
     private String aboutInstitution;
 
-    @OneToMany(mappedBy = "institution", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "institution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonBackReference
-    private List<Student> students;
+    private List<Student> students =  new ArrayList<>();;
 
     // Helper methods
     @PrePersist
