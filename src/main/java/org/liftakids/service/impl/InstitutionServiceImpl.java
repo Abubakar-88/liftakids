@@ -53,7 +53,7 @@ public class InstitutionServiceImpl implements InstitutionService {
     private final SystemAdminRepository systemAdminRepository;
 
     private static final Logger log = LoggerFactory.getLogger(InstitutionServiceImpl.class.getName());
-
+    @Transactional
     @Override
     public InstitutionResponseDto createInstitution(InstitutionRequestDto requestDto) {
         // Fetch all location entities
