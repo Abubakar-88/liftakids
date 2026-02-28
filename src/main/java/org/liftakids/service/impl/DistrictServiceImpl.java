@@ -1,5 +1,6 @@
 package org.liftakids.service.impl;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.liftakids.dto.district.DistrictDto;
 import org.liftakids.dto.district.DistrictResponseDTO;
@@ -129,9 +130,10 @@ public class DistrictServiceImpl implements DistrictService {
             return dto;
         }).collect(Collectors.toList());
     }
+    @Transactional
     @Override
     public Page<DistrictResponseDTO> getAllDistricts(Pageable pageable) {
-        Page<Districts> districts = districtRepository.findAll(pageable);
+        Page<Districts> districts = districtRepository.findAllWithFetch(pageable);
 
         return districts.map(district -> {
             DistrictResponseDTO dto = new DistrictResponseDTO();
