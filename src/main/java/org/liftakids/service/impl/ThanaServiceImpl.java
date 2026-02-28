@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.liftakids.dto.thana.ThanaDto;
 import org.liftakids.dto.thana.ThanaResponseDTO;
+import org.liftakids.dto.unionOrArea.UnionOrAreaResponseDTO;
 import org.liftakids.entity.address.Districts;
 import org.liftakids.entity.address.Divisions;
 import org.liftakids.entity.address.Thanas;
@@ -81,13 +82,60 @@ public class ThanaServiceImpl implements ThanaService {
 
         return dto;
     }
-
     @Override
     public List<ThanaResponseDTO> getThanasByDistrictId(Long districtId) {
         return thanaRepository.findByDistrictId(districtId).stream()
-                .map(thana -> modelMapper.map(thana, ThanaResponseDTO.class))
+                .map(thana -> {
+                    ThanaResponseDTO dto = new ThanaResponseDTO();
+
+                    // Map Thana fields
+                    dto.setThanaId(thana.getThanaId()); // assuming your entity has getId()
+                    dto.setThanaName(thana.getThanaName()); // assuming your entity has getName()
+
+                    // Map District fields if available
+                    if (thana.getDistrict() != null) {
+                        dto.setDistrictId(thana.getDistrict().getDistrictId());
+                        dto.setDistrictName(thana.getDistrict().getDistrictName());
+
+                        // Map Division fields through District
+                        if (thana.getDistrict().getDivision() != null) {
+                            dto.setDivisionId(thana.getDistrict().getDivision().getDivisionId());
+                            dto.setDivisionName(thana.getDistrict().getDivision().getDivisionName());
+                        }
+                    }
+
+                    // Map UnionOrAreas if needed
+                    if (thana.getUnionOrAreas() != null) {
+                        List<UnionOrAreaResponseDTO> unionOrAreaDTOs = thana.getUnionOrAreas().stream()
+                                .map(unionOrArea -> {
+                                    UnionOrAreaResponseDTO areaDTO = new UnionOrAreaResponseDTO();
+                                    areaDTO.setUnionOrAreaId(unionOrArea.getUnionOrAreaId());
+                                    areaDTO.setUnionOrAreaName(unionOrArea.getUnionOrAreaName());
+                                    areaDTO.setThanaName(thana.getThanaName());
+                                    areaDTO.setThanaId(thana.getThanaId());
+
+                                    // Set district and division info
+                                    if (thana.getDistrict() != null) {
+                                        areaDTO.setDistrictId(thana.getDistrict().getDistrictId());
+                                        areaDTO.setDistrictName(thana.getDistrict().getDistrictName());
+
+                                        if (thana.getDistrict().getDivision() != null) {
+                                            areaDTO.setDivisionId(thana.getDistrict().getDivision().getDivisionId());
+                                            areaDTO.setDivisionName(thana.getDistrict().getDivision().getDivisionName());
+                                        }
+                                    }
+                                    return areaDTO;
+                                })
+                                .collect(Collectors.toList());
+
+                        dto.setUnionOrAreas(unionOrAreaDTOs);
+                    }
+
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
+
     @Override
     public ThanaResponseDTO updateThana(Long thanaId, ThanaDto thanaRequestDTO) {
         // 1. Fetch the existing thana with complete relationships
