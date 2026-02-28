@@ -121,7 +121,7 @@ public class Institutions {
 
     @OneToMany(mappedBy = "institution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonBackReference
-    private List<Student> students =  new ArrayList<>();;
+    private List<Student> students =  new ArrayList<>();
 
     // Helper methods
     @PrePersist
