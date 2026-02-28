@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.liftakids.entity.Institutions;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -26,7 +27,7 @@ public class UnionOrArea {
     private Thanas thana;
 
     @OneToMany(mappedBy = "unionOrArea", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Institutions> institutions;
+    private List<Institutions> institutions = new ArrayList<>();
 
 
 }
