@@ -1,6 +1,7 @@
 package org.liftakids.service.impl;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.liftakids.dto.donor.*;
 import org.liftakids.entity.Donor;
@@ -109,6 +110,7 @@ public class DonorServiceImpl implements DonorService {
         donorRepository.delete(donor);
     }
 
+    @Transactional
     @Override
     public LoginResponseDto loginDonor(LoginRequestDto loginRequest) {
          //find the donor

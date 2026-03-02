@@ -48,7 +48,7 @@ public class Donor {
     @OneToMany(mappedBy = "donor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Sponsorship> sponsorships = new ArrayList<>();
 
-    @OneToMany(mappedBy = "donor", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "donor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Where(clause = "status = 'ACTIVE'")
     private List<Sponsorship> activeSponsorships = new ArrayList<>();
 
