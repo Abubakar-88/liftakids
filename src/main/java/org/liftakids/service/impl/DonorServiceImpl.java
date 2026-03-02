@@ -33,7 +33,8 @@ public class DonorServiceImpl implements DonorService {
         donor.setDonorId(null); // ensure it's treated as new
         return modelMapper.map(donorRepository.save(donor), DonorResponseDto.class);
     }
-
+    @Transactional
+    @Override
     public Page<DonorResponseDto> getAllDonorsWithPagination(int page, int size, String sortBy, String sortDir) {
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
                 ? Sort.by(sortBy).ascending()
@@ -47,6 +48,8 @@ public class DonorServiceImpl implements DonorService {
     private DonorResponseDto convertToDto(Donor donor) {
         return DonorResponseDto.fromEntity(donor);
     }
+    @Transactional
+    @Override
     public DonorResponseDto updateDonor(Long donorId, DonorUpdateRequestDto updateRequestDto) {
         Donor donor = donorRepository.findById(donorId)
                 .orElseThrow(() -> new EntityNotFoundException("Donor not found with id: " + donorId));
@@ -80,12 +83,15 @@ public class DonorServiceImpl implements DonorService {
         Donor updatedDonor = donorRepository.save(donor);
         return convertToDto(updatedDonor);
     }
+    @Transactional
+    @Override
     public List<DonorResponseDto> searchDonors(String searchTerm) {
         return donorRepository.searchDonors(searchTerm).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
     public List<DonorResponseDto> getAllDonors() {
         return donorRepository.findAll().stream()
@@ -93,6 +99,7 @@ public class DonorServiceImpl implements DonorService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
     public DonorResponseDto getDonorById(Long donarId) {
         Donor donor = donorRepository.findById(donarId)
@@ -137,6 +144,7 @@ public class DonorServiceImpl implements DonorService {
 
         return response;
     }
+    @Transactional
     @Override
     public PasswordResetResponseDto changePassword(Long donorId, PasswordChangeRequestDto request) {
         try {

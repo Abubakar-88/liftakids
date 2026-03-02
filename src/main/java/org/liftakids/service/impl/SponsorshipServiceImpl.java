@@ -98,6 +98,7 @@ public class SponsorshipServiceImpl implements SponsorshipService {
         response.setMessage("New sponsorship created successfully");
         return response;
     }
+    @Transactional
     @Override
     public List<SponsorshipResponseDto> getPendingSponsorshipsForInstitution(Long institutionId) {
         // Find sponsorships that are ACTIVE but have no payments or pending payments
@@ -115,6 +116,7 @@ public class SponsorshipServiceImpl implements SponsorshipService {
         return sponsorships.map(this::sponsorConvertToDto);
     }
 
+    @Transactional
     @Override
     public Page<SponsorshipResponseDto> searchSponsorships(SponsorshipSearchRequest request, Pageable pageable) {
         // Convert string enums to actual enum values
@@ -155,6 +157,8 @@ public class SponsorshipServiceImpl implements SponsorshipService {
     }
 
     // Optimized version
+    @Transactional
+    @Override
     public List<SponsorshipResponseDto> getPendingPaymentSponsorshipsOptimized(Long institutionId) {
         List<Sponsorship> pendingSponsorships = sponsorshipRepository
                 .findPendingPaymentSponsorships(institutionId);
@@ -163,6 +167,8 @@ public class SponsorshipServiceImpl implements SponsorshipService {
                 .map(this::sponsorConvertToDto)
                 .collect(Collectors.toList());
     }
+    @Transactional
+    @Override
     public Map<String, Long> getSponsorshipStatusCounts(Long institutionId) {
         List<Sponsorship> allSponsorships = sponsorshipRepository
                 .findByStudentInstitutionId(institutionId);
@@ -230,6 +236,7 @@ private SponsorshipResponseDto sponsorConvertToDto(Sponsorship sponsorship) {
         return date != null ? date.format(DateTimeFormatter.ofPattern("MMM yyyy")) : "";
     }
 
+    @Transactional
     @Override
     public List<SponsorshipResponseDto> getByStudentId(Long studentId) {
         return sponsorshipRepository.findByStudentId(studentId)
@@ -238,6 +245,7 @@ private SponsorshipResponseDto sponsorConvertToDto(Sponsorship sponsorship) {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
     public List<SponsorshipResponseDto> getOverdueSponsorships() {
         return sponsorshipRepository.findByStatusAndPaidUpToBeforeOrPaidUpToIsNull(
@@ -347,6 +355,7 @@ private SponsorshipResponseDto convertToResDto(Sponsorship sponsorship) {
         return modelMapper.map(donor, SponsorDetailsDto.class);
     }
 
+    @Transactional
     @Override
     public List<SponsorshipResponseDto> getSponsorshipsByDonorId(Long donorId) {
         List<Sponsorship> sponsorships = sponsorshipRepository.findByDonorDonorId(donorId);
@@ -354,6 +363,7 @@ private SponsorshipResponseDto convertToResDto(Sponsorship sponsorship) {
                 .map(this::sponsorConvertToDto)
                 .collect(Collectors.toList());
     }
+    @Transactional
     @Override
     public Page<SponsorshipResponseDto> getSponsorshipsByDonorId(Long donorId, Pageable pageable) {
         Page<Sponsorship> sponsorships = sponsorshipRepository.findByDonorDonorId(donorId, pageable);
