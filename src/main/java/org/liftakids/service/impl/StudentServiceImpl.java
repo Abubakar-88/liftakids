@@ -429,19 +429,32 @@ public List<StudentResponseDto> getStudentsByInstitution(Long institutionId) {
                 .collect(Collectors.toList());
     }
 
-
     @Transactional
     @Override
     public List<StudentResponseDto> searchStudents(String studentName, String guardianName, String gender, String contactNumber) {
-        List<Student> students = studentRepository.searchStudents(studentName, guardianName,contactNumber);
+        // string with null
+        studentName = (studentName != null && !studentName.trim().isEmpty()) ? studentName.trim() : null;
+        guardianName = (guardianName != null && !guardianName.trim().isEmpty()) ? guardianName.trim() : null;
+        contactNumber = (contactNumber != null && !contactNumber.trim().isEmpty()) ? contactNumber.trim() : null;
+
+        List<Student> students = studentRepository.searchStudents(studentName, guardianName, contactNumber);
+
         return students.stream()
-                .map(student -> {
-                    StudentResponseDto dto = modelMapper.map(student, StudentResponseDto.class);
-                    dto.setInstitutionsId(student.getInstitution().getInstitutionsId());
-                    return dto;
-                })
+                .map(this::convertToStudentResponseDto)  // separate method ব্যবহার করুন
                 .collect(Collectors.toList());
     }
+//    @Transactional
+//    @Override
+//    public List<StudentResponseDto> searchStudents(String studentName, String guardianName, String gender, String contactNumber) {
+//        List<Student> students = studentRepository.searchStudents(studentName, guardianName,contactNumber);
+//        return students.stream()
+//                .map(student -> {
+//                    StudentResponseDto dto = modelMapper.map(student, StudentResponseDto.class);
+//                    dto.setInstitutionsId(student.getInstitution().getInstitutionsId());
+//                    return dto;
+//                })
+//                .collect(Collectors.toList());
+//    }
 
 //    @Override
 //    public void deleteStudent(Long studentId) {
