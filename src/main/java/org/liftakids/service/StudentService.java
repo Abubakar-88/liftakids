@@ -30,4 +30,5 @@ public interface StudentService {
     //List<StudentResponseDto> getUnsponsoredUrgentStudents(int limit);
     List<StudentResponseDto> getStudentPendingSponsorships(Long studentId, LocalDate fromDate);
     public boolean hasPendingSponsorships(Long studentId, LocalDate fromDate);
+    List<StudentResponseDto> getTopUnsponsoredUrgentStudents(int limit);
 }

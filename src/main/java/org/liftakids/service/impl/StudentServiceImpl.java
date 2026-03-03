@@ -472,7 +472,14 @@ public void deleteStudent(Long studentId) {
                 .map(this::convertToStudentResponseDto)
                 .collect(Collectors.toList());
     }
-
+    @Transactional
+    @Override
+    public List<StudentResponseDto> getTopUnsponsoredUrgentStudents(int limit) {
+        List<Student> students = studentRepository.findTopUnsponsoredUrgentStudents(limit);
+        return students.stream()
+                .map(this::convertToStudentResponseDto)
+                .collect(Collectors.toList());
+    }
 //    @Override
 //    public List<StudentResponseDto> getUnsponsoredStudentsByFinancialRank(String financialRank, int limit) {
 //        List<Student> students = studentRepository.findTopNBySponsoredFalseAndFinancialRankAndStatus(

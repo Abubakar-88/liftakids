@@ -50,7 +50,8 @@ public interface StudentRepository extends JpaRepository<Student,Long> {
 
     @Query(value = "SELECT * FROM student s WHERE s.is_sponsored = false AND s.financial_rank = 'Urgent' AND s.status = 'ACTIVE' ORDER BY s.created_date DESC LIMIT 3", nativeQuery = true)
     List<Student> findTop3UnsponsoredUrgentStudents();
-
+    @Query(value = "SELECT * FROM student s WHERE s.is_sponsored = false AND s.financial_rank = 'Urgent' AND s.status = 'ACTIVE' ORDER BY s.created_date DESC LIMIT :limit", nativeQuery = true)
+    List<Student> findTopUnsponsoredUrgentStudents(@Param("limit") int limit);
 
 //    @Query("SELECT s FROM Student s WHERE s.sponsored = false AND s.financialRank = 'URGENT' AND s.status = 'ACTIVE' ORDER BY s.createdDate DESC")
 //    List<Student> findUnsponsoredUrgentStudents(Pageable pageable);

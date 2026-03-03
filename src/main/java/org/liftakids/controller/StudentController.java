@@ -159,7 +159,11 @@ public ResponseEntity<StudentResponseDto> createStudent(
     public ResponseEntity<List<StudentResponseDto>> getTop3UnsponsoredUrgentStudents() {
         return ResponseEntity.ok(studentService.getTop3UnsponsoredUrgentStudents());
     }
-
+    @GetMapping("/unsponsored/urgent/top")
+    public ResponseEntity<List<StudentResponseDto>> getTopUnsponsoredUrgentStudents(
+            @RequestParam(value = "limit", defaultValue = "4") int limit) {
+        return ResponseEntity.ok(studentService.getTopUnsponsoredUrgentStudents(limit));
+    }
     @GetMapping("/{studentId}/pending-sponsorships")
     public ResponseEntity<List<StudentResponseDto>> getPendingSponsorships(
             @PathVariable Long studentId,
