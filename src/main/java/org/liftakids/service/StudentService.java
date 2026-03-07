@@ -23,7 +23,7 @@ public interface StudentService {
             String studentName,
             String guardianName,
             String contactNumber);
-    List<StudentResponseDto> searchStudents(String studentName, String guardianName, String gender, String contactNumber);
+    Page<StudentResponseDto> searchStudents(String studentName, String guardianName, String gender, String contactNumber, Pageable pageable);
     Page<StudentResponseDto> getAllStudents(Pageable pageable);
     void deleteStudent(Long studentId);
     List<StudentResponseDto> getTop3UnsponsoredUrgentStudents();

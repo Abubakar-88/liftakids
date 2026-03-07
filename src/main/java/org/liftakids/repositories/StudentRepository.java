@@ -20,9 +20,9 @@ public interface StudentRepository extends JpaRepository<Student,Long> {
             "(:studentName IS NULL OR LOWER(s.studentName) LIKE LOWER(CONCAT('%', :studentName, '%'))) AND " +
             "(:guardianName IS NULL OR LOWER(s.guardianName) LIKE LOWER(CONCAT('%', :guardianName, '%'))) AND " +
             "(:contactNumber IS NULL OR s.contactNumber LIKE CONCAT('%', :contactNumber, '%'))")
-    List<Student> searchStudents(@Param("studentName") String studentName,
+    Page<Student> searchStudents(@Param("studentName") String studentName,
                                  @Param("guardianName") String guardianName,
-                                 @Param("contactNumber") String contactNumber);
+                                 @Param("contactNumber") String contactNumber, Pageable pageable);
 
     @Query("SELECT s FROM Student s WHERE s.isSponsored = :status")
     List<Student> findBySponsorshipStatus(@Param("status") boolean status);

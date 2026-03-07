@@ -431,17 +431,17 @@ public List<StudentResponseDto> getStudentsByInstitution(Long institutionId) {
 
     @Transactional
     @Override
-    public List<StudentResponseDto> searchStudents(String studentName, String guardianName, String gender, String contactNumber) {
+    public Page<StudentResponseDto> searchStudents(String studentName, String guardianName, String gender, String contactNumber, Pageable pageable) {
         // string with null
         studentName = (studentName != null && !studentName.trim().isEmpty()) ? studentName.trim() : null;
         guardianName = (guardianName != null && !guardianName.trim().isEmpty()) ? guardianName.trim() : null;
         contactNumber = (contactNumber != null && !contactNumber.trim().isEmpty()) ? contactNumber.trim() : null;
 
-        List<Student> students = studentRepository.searchStudents(studentName, guardianName, contactNumber);
-
-        return students.stream()
-                .map(this::convertToStudentResponseDto)  // separate method ব্যবহার করুন
-                .collect(Collectors.toList());
+        Page<Student> studentsPage = studentRepository.searchStudents(studentName, guardianName, contactNumber,pageable);
+        return studentsPage.map(this::convertToStudentResponseDto);
+//        return students.stream()
+//                .map(this::convertToStudentResponseDto)  // separate method ব্যবহার করুন
+//                .collect(Collectors.toList());
     }
 //    @Transactional
 //    @Override

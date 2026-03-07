@@ -138,16 +138,45 @@ public ResponseEntity<StudentResponseDto> createStudent(
         return ResponseEntity.ok(studentService.searchStudentsByInstitution(
                 institutionId, studentName, guardianName, contactNumber));
     }
-
     @GetMapping("/search")
-    public ResponseEntity<List<StudentResponseDto>> searchStudents(
+    public ResponseEntity<Page<StudentResponseDto>> searchStudents(
             @RequestParam(required = false) String studentName,
             @RequestParam(required = false) String guardianName,
             @RequestParam(required = false) String gender,
-            @RequestParam(required = false) String contactNumber) {
+            @RequestParam(required = false) String contactNumber,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "studentName") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
 
-        return ResponseEntity.ok(studentService.searchStudents(studentName, guardianName, gender, contactNumber));
+        // sorting configure
+        Sort sort = sortDir.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        // pageble object
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        // paginate by search
+        Page<StudentResponseDto> resultPage = studentService.searchStudents(
+                studentName,
+                guardianName,
+                gender,
+                contactNumber,
+                pageable
+        );
+
+        return ResponseEntity.ok(resultPage);
     }
+//    @GetMapping("/search")
+//    public ResponseEntity<List<StudentResponseDto>> searchStudents(
+//            @RequestParam(required = false) String studentName,
+//            @RequestParam(required = false) String guardianName,
+//            @RequestParam(required = false) String gender,
+//            @RequestParam(required = false) String contactNumber) {
+//
+//        return ResponseEntity.ok(studentService.searchStudents(studentName, guardianName, gender, contactNumber));
+//    }
 
     @DeleteMapping("/{studentId}")
     public ResponseEntity<Void> deleteStudent(@PathVariable Long studentId) {
