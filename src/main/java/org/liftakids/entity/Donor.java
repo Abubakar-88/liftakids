@@ -37,7 +37,7 @@ public class Donor {
             message = "Invalid international phone number"
     )
     private String phone;
-    @NotBlank(message = "Address is required")
+
     private String address;
 
     @Enumerated(EnumType.STRING)

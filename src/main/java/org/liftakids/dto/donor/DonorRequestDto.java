@@ -28,7 +28,7 @@ public class DonorRequestDto {
     )
     private String phone;
 
-    @NotBlank(message = "Address is required")
+
     private String address;
 
     @NotNull(message = "Donor type is required")
