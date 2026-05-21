@@ -26,7 +26,7 @@ public class PaymentRequestDto {
     @NotNull(message = "End date is required")
     @JsonDeserialize(using = MonthYearDeserializer.class)
     private LocalDate endDate;
-
+    private LocalDate paidUpTo;
     @NotNull(message = "Amount is required")
     @Positive(message = "Amount must be positive")
     @Digits(integer = 10, fraction = 2, message = "Amount must have up to 10 integer and 2 fraction digits")
@@ -96,5 +96,6 @@ public class PaymentRequestDto {
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate != null ? endDate.withDayOfMonth(endDate.lengthOfMonth()) : null;
     }
+
 
 }

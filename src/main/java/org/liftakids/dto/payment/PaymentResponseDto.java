@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+
 @Data
 @Builder
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
@@ -16,11 +17,13 @@ public class PaymentResponseDto {
     private Long id;
     private Long sponsorshipId;
     private String studentName;
+    private Long studentId;
     private String donorName;
+    private Long donorId;
     private String institutionName;
     private LocalDate paymentDate;
     private String paidPeriod;  // This is the field we need to set
-    private String paidUpTo;
+    private LocalDate paidUpTo;
     private BigDecimal amount;
     private PaymentMethod paymentMethod;
     private PaymentStatus status;

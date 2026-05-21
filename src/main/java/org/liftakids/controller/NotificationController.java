@@ -1,15 +1,18 @@
 package org.liftakids.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.liftakids.dto.notifications.NotificationResponseDTO;
 import org.liftakids.entity.Notification;
 import org.liftakids.entity.enm.UserType;
 import org.liftakids.service.NotificationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -19,7 +22,7 @@ public class NotificationController {
 
     // ============= COMMON ENDPOINTS (User Type based) =============
     @GetMapping
-    public ResponseEntity<List<Notification>> getNotifications(
+    public ResponseEntity<List<NotificationResponseDTO>> getNotifications(
             @RequestParam String userType,
             @RequestParam(required = false) Long userId) {
 
@@ -44,11 +47,43 @@ public class NotificationController {
                     return ResponseEntity.badRequest().build();
             }
 
-            return ResponseEntity.ok(notifications);
+            // Convert to DTO
+            List<NotificationResponseDTO> responseDtos = notifications.stream()
+                    .map(this::convertToDto)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(responseDtos);
 
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    // ============= CONVERTER METHOD =============
+    private NotificationResponseDTO convertToDto(Notification notification) {
+        return NotificationResponseDTO.builder()
+                .notificationId(notification.getNotificationId())
+                .userType(notification.getUserType())
+                .userId(notification.getUserId())
+                .title(notification.getTitle())
+                .message(notification.getMessage())
+                .shortMessage(notification.getShortMessage())
+                .type(notification.getType())
+                .status(notification.getStatus())
+                .createdAt(notification.getCreatedAt())
+                .readAt(notification.getReadAt())
+                .sentAt(notification.getSentAt())
+                .actionUrl(notification.getActionUrl())
+                .actionText(notification.getActionText())
+                .icon(notification.getIcon())
+                .relatedEntityType(notification.getRelatedEntityType())
+                .relatedEntityId(notification.getRelatedEntityId())
+                .relatedEntityName(notification.getRelatedEntityName())
+                .priority(notification.getPriority())
+                .category(notification.getCategory())
+                .senderName(notification.getSenderName())
+                .senderType(notification.getSenderType())
+                .build();
     }
 
     @GetMapping("/unread")

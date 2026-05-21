@@ -21,15 +21,62 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/institution/payments")
 @RequiredArgsConstructor
 public class InstitutionPaymentController {
     private final SponsorshipService sponsorshipService;
     private final PaymentService paymentService;
-   private final FileStorageService fileStorageService;
+    private final FileStorageService fileStorageService;
 
 
     // Get PENDING_PAYMENT sponsorships
+//    @GetMapping("/pending-payment-sponsorships")
+//    public ResponseEntity<PendingPaymentDashboardResponseDto> getPendingPaymentData(
+//            @RequestParam Long institutionId) {
+//
+//        try {
+//
+//            List<SponsorshipResponseDto> pendingSponsorships =
+//                    sponsorshipService.getPendingPaymentSponsorshipsOptimized(institutionId);
+//
+//            List<PaymentResponseDto> pendingPayments =
+//                    paymentService.getPendingPaymentsForExistingSponsors(institutionId);
+//
+//            PendingPaymentDashboardResponseDto response =
+//                    PendingPaymentDashboardResponseDto.builder()
+//                            .pendingSponsorships(pendingSponsorships)
+//                            .pendingPayments(pendingPayments)
+//                            .build();
+//
+//            return ResponseEntity.ok(response);
+//
+//        } catch (Exception e) {
+//
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body(new PendingPaymentDashboardResponseDto(
+//                            Collections.emptyList(),
+//                            Collections.emptyList()
+//                    ));
+//        }
+//    }
+    @GetMapping("/pending-existing-payments")
+    public ResponseEntity<List<PaymentResponseDto>>
+    getPendingExistingPayments(
+            @RequestParam Long institutionId) {
+
+        try {
+
+            List<PaymentResponseDto> payments =
+                    paymentService.getPendingPaymentsForExistingSponsors(institutionId);
+
+            return ResponseEntity.ok(payments);
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.emptyList());
+        }
+    }
     @GetMapping("/pending-payment-sponsorships")
     public ResponseEntity<List<SponsorshipResponseDto>> getPendingPaymentSponsorships(
             @RequestParam Long institutionId) {
@@ -49,13 +96,31 @@ public class InstitutionPaymentController {
         return ResponseEntity.ok(response);
     }
     // Confirm payment
+//    @PostMapping("/confirm")
+//    public ResponseEntity<PaymentResponseDto> confirmPayment(
+//            @RequestBody PaymentConfirmationRequestDto request) {
+//        PaymentResponseDto response = paymentService.confirmPayment(request);
+//        return ResponseEntity.ok(response);
+//    }
     @PostMapping("/confirm")
-    public ResponseEntity<PaymentResponseDto> confirmPayment(
+    public ResponseEntity<?> confirmPayment(
             @RequestBody PaymentConfirmationRequestDto request) {
-        PaymentResponseDto response = paymentService.confirmPayment(request);
-        return ResponseEntity.ok(response);
-    }
 
+        try {
+
+            PaymentResponseDto response =
+                    paymentService.confirmPayment(request);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return ResponseEntity.badRequest()
+                    .body(e.getMessage());
+        }
+    }
     // Get payments by student
     @GetMapping("/student/{studentId}")
     public ResponseEntity<List<PaymentResponseDto>> getPaymentsByStudent(

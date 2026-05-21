@@ -3,6 +3,7 @@ package org.liftakids.dto.student;
 import lombok.Builder;
 import lombok.Data;
 import org.liftakids.dto.institute.InstitutionResponseDto;
+import org.liftakids.entity.PaymentStatus;
 import org.liftakids.entity.SponsorshipStatus;
 
 import java.math.BigDecimal;
@@ -33,10 +34,12 @@ public class StudentResponseDto {
     private List<SponsorInfoDto> sponsors;
     private InstitutionResponseDto institutions;
 
+
     @Data
     @Builder
     public static class SponsorInfoDto {
         private Long donorId;
+        private Long sponsorshipId;
         private String donorName;
         private BigDecimal monthlyAmount;
         private LocalDate sponsorStartDate;
@@ -44,6 +47,7 @@ public class StudentResponseDto {
         private LocalDate startDate;
         private LocalDate endDate;
         private SponsorshipStatus status;
+        private PaymentStatus paymentStatus;
         private LocalDate lastPaymentDate;
         private LocalDate paidUpTo;
         private Integer monthsPaid;

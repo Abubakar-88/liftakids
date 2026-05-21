@@ -6,6 +6,7 @@ import org.liftakids.dto.payment.ManualPaymentRequestDto;
 import org.liftakids.dto.payment.PaymentConfirmationRequestDto;
 import org.liftakids.dto.payment.PaymentRequestDto;
 import org.liftakids.dto.payment.PaymentResponseDto;
+import org.liftakids.dto.sponsorship.SponsorshipResponseDto;
 import org.liftakids.entity.*;
 import org.liftakids.exception.BusinessException;
 import org.liftakids.exception.ResourceNotFoundException;
@@ -13,6 +14,7 @@ import org.liftakids.repositories.DonorRepository;
 import org.liftakids.repositories.PaymentRepository;
 import org.liftakids.repositories.SponsorshipRepository;
 import org.liftakids.repositories.StudentRepository;
+import org.liftakids.service.NotificationService;
 import org.liftakids.service.PaymentService;
 import org.liftakids.service.Util.EmailService;
 import org.modelmapper.ModelMapper;
@@ -43,6 +45,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final StudentRepository studentRepository;
     private final DonorRepository donorRepository;
     private final EmailService emailService;
+    private final NotificationService notificationService;
     private static final Logger log = LoggerFactory.getLogger(PaymentServiceImpl.class);
     @Override
     @Transactional
@@ -61,9 +64,16 @@ public class PaymentServiceImpl implements PaymentService {
         Payment payment = request.isTestPayment()
                 ? processTestPayment(sponsorship, request)
                 : processRegularPayment(sponsorship, request);
-
+        // IMPORTANT
+        boolean isExistingSponsor =
+                sponsorship.getStatus() == SponsorshipStatus.COMPLETED;
         // Save and return
         paymentRepository.save(payment);
+        notificationService.sendPendingPaymentNotification(
+                sponsorship,
+                payment,
+                isExistingSponsor
+        );
         sponsorshipRepository.save(sponsorship);
         return convertToDto(payment);
     }
@@ -87,7 +97,7 @@ public class PaymentServiceImpl implements PaymentService {
                         LocalDate.now(),
                         request.getAmount(),
                         request.getPaymentMethod(),
-                        PaymentStatus.COMPLETED,
+                        PaymentStatus.PENDING,
                         adjustedStartDate,
                         adjustedEndDate
                 )
@@ -96,7 +106,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .build();
 
         // Update sponsorship
-        updateSponsorship(sponsorship, payment, request.getAmount());
+        //updateSponsorship(sponsorship, payment, request.getAmount());
 
         return payment;
     }
@@ -203,7 +213,7 @@ public class PaymentServiceImpl implements PaymentService {
             throw new BusinessException("Cannot create test payment before sponsorship start");
         }
         validatePayment(sponsorship, adjustedStartDate, adjustedEndDate, request.getAmount());
-      //  int totalMonths = (int) ChronoUnit.MONTHS.between(adjustedStartDate, adjustedEndDate) + 1;
+        //  int totalMonths = (int) ChronoUnit.MONTHS.between(adjustedStartDate, adjustedEndDate) + 1;
 
         // Build and save payment
         Payment payment = Payment.builder(
@@ -240,11 +250,9 @@ public class PaymentServiceImpl implements PaymentService {
     public Page<PaymentResponseDto> getPaymentsByDonor(Long donorId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Payment> payments = paymentRepository.findByDonorId(donorId, pageable);
-
         if (payments.isEmpty()) {
             throw new ResourceNotFoundException("No payments found for donor with id: " + donorId);
         }
-
         return payments.map(this::convertToDto);
     }
 
@@ -264,21 +272,31 @@ public class PaymentServiceImpl implements PaymentService {
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
-//    public List<PaymentResponseDto> getPaymentsBySponsorship(Long sponsorshipId) {
+    //    public List<PaymentResponseDto> getPaymentsBySponsorship(Long sponsorshipId) {
 //        return paymentRepository.findBySponsorshipId(sponsorshipId).stream()
 //                .map(this::convertToDto)
 //                .collect(Collectors.toList());
 //    }
+// Pending Payment for existing sponsor
+    public List<PaymentResponseDto> getPendingPaymentsForExistingSponsors(Long institutionId) {
+        List<Payment> pendingPayment = paymentRepository
+                .findPendingPaymentsForExistingSponsors(institutionId);
 
+        return pendingPayment.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
     private PaymentResponseDto convertToDto(Payment payment) {
         PaymentResponseDto dto = modelMapper.map(payment, PaymentResponseDto.class);
         dto.setSponsorshipId(payment.getSponsorship().getId());
         dto.setStudentName(payment.getSponsorship().getStudent().getStudentName());
+        dto.setStudentId(payment.getSponsorship().getStudent().getStudentId());
         dto.setDonorName(payment.getSponsorship().getDonor().getName());
-
+        dto.setDonorId(payment.getSponsorship().getDonor().getDonorId());
         // Set dates properly
         dto.setStartDate(payment.getStartDate());
         dto.setEndDate(payment.getEndDate());
+        dto.setPaidUpTo(payment.getPaidUpTo());
         dto.setTransactionId(payment.getTransactionId());
 
         // Set formatted period string
@@ -301,29 +319,22 @@ public class PaymentServiceImpl implements PaymentService {
         return dto;
     }
 
-    // Get pending payments for institution
-//    @Override
-//    public List<SponsorshipResponseDto> getPendingSponsorshipsForInstitution(Long institutionId) {
-//        // Find sponsorships that are ACTIVE but have no payments or pending payments
-//        List<Sponsorship> pendingSponsorships = sponsorshipRepository
-//                .findByStudentInstitutionIdAndStatus(institutionId, SponsorshipStatus.ACTIVE);
-//
-//        return pendingSponsorships.stream()
-//                .map(this::convertToDto)
-//                .collect(Collectors.toList());
-//    }
-// Menual payment confirmation
+
     @Override
     @Transactional
     public PaymentResponseDto confirmPayment(PaymentConfirmationRequestDto request) {
         Payment payment = paymentRepository.findById(request.getPaymentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found with id: " + request.getPaymentId()));
-
+        Sponsorship sponsorship = payment.getSponsorship();
         // Validate payment is pending confirmation
-        if (payment.getStatus() != PaymentStatus.PENDING_PAYMENT) {
+//        if (payment.getStatus() != PaymentStatus.PENDING || sponsorship.getStatus() !=SponsorshipStatus.PENDING_PAYMENT) {
+//            throw new BusinessException("Payment is not pending confirmation");
+//        }
+        if (payment.getStatus() != PaymentStatus.PENDING &&
+                payment.getStatus() != PaymentStatus.PENDING_PAYMENT) {
+
             throw new BusinessException("Payment is not pending confirmation");
         }
-
         // Validate required fields
         if (request.getReceiptNumber() == null || request.getReceiptNumber().trim().isEmpty()) {
             throw new BusinessException("Receipt number is required");
@@ -335,6 +346,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         // Update payment with institution confirmation details
         payment.setStatus(PaymentStatus.COMPLETED);
+        payment.setPaidUpTo(payment.getEndDate());
         payment.setReceiptNumber(request.getReceiptNumber());
 
         // Set receipt URL if provided
@@ -372,9 +384,14 @@ public class PaymentServiceImpl implements PaymentService {
             // Set default confirmed by (current user/institution name)
             payment.setConfirmedBy("Institution"); // You can get from security context
         }
+        // New sponsorship activation
+        if (sponsorship.getStatus() == SponsorshipStatus.PENDING_PAYMENT) {
+
+            sponsorship.setStatus(SponsorshipStatus.ACTIVE);
+        }
 
         // Update sponsorship
-        Sponsorship sponsorship = payment.getSponsorship();
+
         updateSponsorshipAfterConfirmation(sponsorship, payment);
 
         // Save changes
@@ -484,6 +501,39 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
 
+
+    @Override
+    @Transactional
+    public PaymentResponseDto createManualPayment(ManualPaymentRequestDto request) {
+        // Convert to PaymentRequestDto
+        PaymentRequestDto paymentRequest = new PaymentRequestDto();
+        paymentRequest.setStudentId(request.getStudentId());
+        paymentRequest.setDonorId(request.getDonorId());
+        paymentRequest.setStartDate(request.getStartDate());
+        paymentRequest.setEndDate(request.getEndDate());
+        paymentRequest.setPaidUpTo(request.getEndDate());
+        paymentRequest.setMonthlyAmount(request.getMonthlyAmount());
+        paymentRequest.setAmount(request.getAmount());
+        paymentRequest.setReceiptNumber(request.getReceiptNumber());
+        paymentRequest.setReceiptUrl(request.getReceiptUrl());
+        paymentRequest.setNotes(request.getNotes());
+        paymentRequest.setPaymentMethod(PaymentMethod.MANUAL);
+
+        // Set receivedAmount - if not provided, use the main amount
+        if (request.getReceivedAmount() != null) {
+            paymentRequest.setReceivedAmount(request.getReceivedAmount());
+        } else {
+            paymentRequest.setReceivedAmount(request.getAmount()); // Default to main amount
+        }
+
+        // Set sponsorshipId if provided
+        if (request.getSponsorshipId() != null) {
+            paymentRequest.setSponsorshipId(request.getSponsorshipId());
+        }
+
+        // Use existing method
+        return processInstitutionManualPayment(paymentRequest);
+    }
     // process for manul payment confirmation
     @Override
     @Transactional
@@ -546,6 +596,7 @@ public class PaymentServiceImpl implements PaymentService {
                         adjustedStartDate,
                         adjustedEndDate
                 )
+                .paidUpTo(adjustedEndDate)
                 .receiptNumber(request.getReceiptNumber())
                 .receiptUrl(request.getReceiptUrl())
                 .confirmedDate(LocalDate.now())
@@ -576,37 +627,6 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         return convertToDto(payment);
-    }
-    @Override
-    @Transactional
-    public PaymentResponseDto createManualPayment(ManualPaymentRequestDto request) {
-        // Convert to PaymentRequestDto
-        PaymentRequestDto paymentRequest = new PaymentRequestDto();
-        paymentRequest.setStudentId(request.getStudentId());
-        paymentRequest.setDonorId(request.getDonorId());
-        paymentRequest.setStartDate(request.getStartDate());
-        paymentRequest.setEndDate(request.getEndDate());
-        paymentRequest.setMonthlyAmount(request.getMonthlyAmount());
-        paymentRequest.setAmount(request.getAmount());
-        paymentRequest.setReceiptNumber(request.getReceiptNumber());
-        paymentRequest.setReceiptUrl(request.getReceiptUrl());
-        paymentRequest.setNotes(request.getNotes());
-        paymentRequest.setPaymentMethod(PaymentMethod.MANUAL);
-
-        // Set receivedAmount - if not provided, use the main amount
-        if (request.getReceivedAmount() != null) {
-            paymentRequest.setReceivedAmount(request.getReceivedAmount());
-        } else {
-            paymentRequest.setReceivedAmount(request.getAmount()); // Default to main amount
-        }
-
-        // Set sponsorshipId if provided
-        if (request.getSponsorshipId() != null) {
-            paymentRequest.setSponsorshipId(request.getSponsorshipId());
-        }
-
-        // Use existing method
-        return processInstitutionManualPayment(paymentRequest);
     }
     private Sponsorship findOrCreateSponsorship(Student student, Donor donor, PaymentRequestDto request) {
         // Try to find existing active sponsorship
@@ -649,7 +669,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         return sponsorshipRepository.save(sponsorship);
     }
-   @Override
+    @Override
     public List<PaymentResponseDto> getCompletedPaymentsByInstitutionId(Long institutionId) {
         List<Payment> completedPayments = paymentRepository
                 .findBySponsorshipStudentInstitutionInstitutionsIdAndStatus(

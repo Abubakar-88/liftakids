@@ -14,15 +14,15 @@ public interface PaymentService {
     public List<PaymentResponseDto> getPaymentsByStudent(Long studentId);
     Page<PaymentResponseDto> getPaymentsByDonor(Long donorId, int page, int size);
     List<PaymentResponseDto> getPaymentsByDonor(Long donorId);
-
+    List<PaymentResponseDto> getPendingPaymentsForExistingSponsors(Long institutionId);
     // New methods for institution payment confirmation
-   // List<PaymentResponseDto> getPendingPaymentsForInstitution(Long institutionId);
+    // List<PaymentResponseDto> getPendingPaymentsForInstitution(Long institutionId);
     PaymentResponseDto confirmPayment(PaymentConfirmationRequestDto request);
     List<PaymentResponseDto> getPaymentsByStudentAndInstitution(Long studentId, Long institutionId);
     List<PaymentResponseDto> getPaymentsByDonorAndInstitution(Long donorId, Long institutionId);
 
     //menual payment
-   PaymentResponseDto processInstitutionManualPayment(PaymentRequestDto request);
+    PaymentResponseDto processInstitutionManualPayment(PaymentRequestDto request);
     PaymentResponseDto createManualPayment(ManualPaymentRequestDto request);
 
     List<PaymentResponseDto> getCompletedPaymentsByInstitutionId(Long institutionId);

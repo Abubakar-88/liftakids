@@ -12,7 +12,11 @@ public interface NotificationService {
     Long getUnreadCount(Long donorId);
     void markAsRead(Long notificationId, Long donorId);
     void markAllAsRead(Long donorId);
-
+    void sendPendingPaymentNotification(
+            Sponsorship sponsorship,
+            Payment payment,
+            boolean isExistingSponsor
+    );
     // New institution methods
     List<Notification> getInstitutionNotifications(Long institutionId);
     List<Notification> getUnreadNotificationsForInstitution(Long institutionId);

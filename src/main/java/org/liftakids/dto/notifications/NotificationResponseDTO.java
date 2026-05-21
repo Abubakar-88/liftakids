@@ -3,6 +3,7 @@ package org.liftakids.dto.notifications;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.liftakids.entity.Notification;
@@ -12,13 +13,16 @@ import org.liftakids.entity.enm.UserType;
 
 import java.time.LocalDateTime;
 
+
 @Data
 @NoArgsConstructor
+@Builder
 @AllArgsConstructor
 public class NotificationResponseDTO {
     private Long notificationId;
     private String title;
     private String message;
+    private String shortMessage;
     private NotificationType type;
     private NotificationStatus status;
     private UserType userType;
@@ -35,7 +39,7 @@ public class NotificationResponseDTO {
     private String senderName;
     private String senderType;
     private Long senderId;
-
+    private LocalDateTime sentAt;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 
@@ -47,6 +51,7 @@ public class NotificationResponseDTO {
         this.notificationId = notification.getNotificationId();
         this.title = notification.getTitle();
         this.message = notification.getMessage();
+        this.shortMessage = notification.getShortMessage();
         this.type = notification.getType();
         this.status = notification.getStatus();
         this.userType = notification.getUserType();
@@ -63,6 +68,7 @@ public class NotificationResponseDTO {
         this.senderName = notification.getSenderName();
         this.senderType = notification.getSenderType();
         this.senderId = notification.getSenderId();
+        this.sentAt = notification.getSentAt();
         this.createdAt = notification.getCreatedAt();
         this.readAt = notification.getReadAt();
     }

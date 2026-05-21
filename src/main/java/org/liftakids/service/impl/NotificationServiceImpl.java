@@ -15,6 +15,7 @@ import org.liftakids.service.NotificationService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -368,7 +369,7 @@ public class NotificationServiceImpl implements NotificationService {
         switch (type) {
             case PAYMENT_REMINDER:
             case PAYMENT_CONFIRMED:
-           // case PAYMENT_FAILED:
+                // case PAYMENT_FAILED:
                 return "View Payment";
             case SPONSORSHIP_CREATED:
             case SPONSORSHIP_EXPIRED:
@@ -385,7 +386,7 @@ public class NotificationServiceImpl implements NotificationService {
     // Helper method to determine priority based on type
     private String getPriorityByType(NotificationType type) {
         switch (type) {
-           // case PAYMENT_FAILED:
+            // case PAYMENT_FAILED:
             case ADMIN_ALERT:
             case SECURITY_ALERT:
                 return "HIGH";
@@ -492,90 +493,6 @@ public class NotificationServiceImpl implements NotificationService {
         log.info("Payment notification sent to donor {}", donor.getEmail());
     }
 
-//    @Override
-//    public void sendInstitutionRegistrationNotification(Institutions institution) {
-//        // Notification to institution
-//        createNotification(
-//                null, // no donor
-//                "Registration Submitted",
-//                String.format("Dear %s, your registration request has been submitted successfully. Our admin team will review it shortly.",
-//                        institution.getInstitutionName()),
-//                NotificationType.INSTITUTION_REGISTRATION,
-//                "/institutions/dashboard",
-//                "INSTITUTION",
-//                institution.getInstitutionsId(),
-//                institution
-//        );
-//
-//        // Notification to all admins
-//        sendAdminNotification(
-//                "New Institution Registration",
-//                String.format("Institution '%s' has submitted registration request. Please review.",
-//                        institution.getInstitutionName()),
-//                NotificationType.ADMIN_ALERT,
-//                "INSTITUTION",
-//                institution.getInstitutionsId()
-//        );
-//
-//        log.info("Registration notification sent for institution {}", institution.getInstitutionName());
-//    }
-//@Override
-//public void sendInstitutionRegistrationNotification(Institutions institution) {
-//    try {
-//        // Notification to institution
-//        Notification institutionNotification = Notification.builder()
-//                .userType(UserType.INSTITUTION)
-//                .userId(institution.getInstitutionsId())
-//                .institution(institution)
-//                .title("Registration Submitted")
-//                .message(String.format("Dear %s, your registration request has been submitted successfully. Our admin team will review it shortly.",
-//                        institution.getInstitutionName()))
-//                .type(NotificationType.INSTITUTION_REGISTRATION)
-//                .status(NotificationStatus.UNREAD)
-//                .createdAt(LocalDateTime.now())
-//                .inAppSent(true)
-//                .actionUrl("/institutions/dashboard")
-//                .relatedEntityType("INSTITUTION")
-//                .relatedEntityId(institution.getInstitutionsId())
-//                .senderName("System")
-//                .senderType("SYSTEM")
-//                .emailSent(true).smsSent(true).pushSent(true).build();
-//
-//        notificationRepository.save(institutionNotification);
-//
-//        // Get all active admins
-//        List<SystemAdmin> admins = adminRepository.findByActiveTrue();
-//
-//        for (SystemAdmin admin : admins) {
-//            Notification adminNotification = Notification.builder()
-//                    .userType(UserType.ADMIN)
-//                    .userId(admin.getAdminId())
-//                    .admin(admin)
-//                    .title("New Institution Registration")
-//                    .message(String.format("Institution '%s' has submitted registration request. Please review.",
-//                            institution.getInstitutionName()))
-//                    .type(NotificationType.ADMIN_ALERT)
-//                    .status(NotificationStatus.UNREAD)
-//                    .createdAt(LocalDateTime.now())
-//                    .inAppSent(true)
-//                    .actionUrl("/admin/institutions/pending")
-//                    .relatedEntityType("INSTITUTION")
-//                    .relatedEntityId(institution.getInstitutionsId())
-//                    .senderName("System")
-//                    .senderType("SYSTEM")
-//                    .emailSent(true).smsSent(true).pushSent(true).build();
-//
-//            notificationRepository.save(adminNotification);
-//        }
-//
-//        log.info("Registration notification sent for institution {}", institution.getInstitutionName());
-//
-//    } catch (Exception e) {
-//        log.error("Failed to send notification for institution {}: {}",
-//                institution.getInstitutionName(), e.getMessage());
-//        // Don't throw exception - notification failure shouldn't break registration
-//    }
-//}
 
     @Override
     public void sendInstitutionApprovedNotification(Institutions institution, SystemAdmin approvedBy) {
@@ -699,6 +616,48 @@ public class NotificationServiceImpl implements NotificationService {
             return notificationRepository.findByUserTypeOrderByCreatedAtDesc(UserType.ADMIN);
         }
     }
+    // Payment Notification for institution
+    @Override
+    @Transactional
+    public void sendPendingPaymentNotification(
+            Sponsorship sponsorship,
+            Payment payment,
+            boolean isExistingSponsor) {
 
+        Institutions institution =
+                sponsorship.getStudent().getInstitution();
+
+        Donor donor = sponsorship.getDonor();
+
+        String title = isExistingSponsor
+                ? "Existing Sponsor Payment Pending"
+                : "New Sponsorship Payment Pending";
+
+        String message = isExistingSponsor
+                ? String.format(
+                "Donor %s submitted a payment for student %s. Please verify and confirm the payment.",
+                donor.getName(),
+                sponsorship.getStudent().getStudentName()
+        )
+                : String.format(
+                "New sponsor %s submitted sponsorship payment for student %s. Please verify and confirm.",
+                donor.getName(),
+                sponsorship.getStudent().getStudentName()
+        );
+
+        NotificationType type = isExistingSponsor
+                ? NotificationType.EXISTING_SPONSOR_PAYMENT
+                : NotificationType.PENDING_PAYMENT;
+
+        createInstitutionNotification(
+                institution,
+                title,
+                message,
+                type,
+                "/institution/payment-confirmation",
+                "PAYMENT",
+                payment.getId()
+        );
+    }
 
 }

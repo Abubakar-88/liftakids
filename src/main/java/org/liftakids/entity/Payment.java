@@ -114,9 +114,9 @@ public class Payment {
 //        }
 
         // Set paidUpTo default to endDate if not set
-        if (paidUpTo == null && endDate != null) {
-            this.paidUpTo = endDate;
-        }
+//        if (paidUpTo == null && endDate != null) {
+//            this.paidUpTo = endDate;
+//        }
     }
 
     public static PaymentBuilder builder(Sponsorship sponsorship, LocalDate paymentDate,
@@ -137,7 +137,7 @@ public class Payment {
                 .status(status)
                 .startDate(startDate)
                 .endDate(endDate)
-                .paidUpTo(endDate) // Default to end date
+//                .paidUpTo(endDate) // Default to end date
                 .totalMonths(months)
                 .receivedAmount(amount); // Default received amount to original amount
     }

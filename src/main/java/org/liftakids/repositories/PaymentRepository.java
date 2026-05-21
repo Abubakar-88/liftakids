@@ -81,4 +81,15 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<PaymentResponseDto> findBySponsorshipStudentStudentIdAndStatus(
             @Param("studentId") Long studentId,
             @Param("status") PaymentStatus status);
+
+    @Query("SELECT p FROM Payment p " +
+            "JOIN p.sponsorship s " +
+            "JOIN s.student st " +
+            "JOIN st.institution i " +
+            "WHERE i.institutionsId = :institutionId " +
+            "AND p.status = org.liftakids.entity.PaymentStatus.PENDING " +
+            "ORDER BY p.paymentDate DESC")
+    List<Payment> findPendingPaymentsForExistingSponsors(
+            @Param("institutionId") Long institutionId);
+
 }
