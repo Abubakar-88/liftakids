@@ -50,7 +50,8 @@ public class UnionOrAreaController {
             @RequestParam Long thanaId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size
-    ) {
+    )
+    {
         Pageable pageable = PageRequest.of(page, size, Sort.by("unionOrAreaId").ascending());
         Page<UnionOrAreaResponseDTO> unions = unionOrAreaService.getUnionsByThanaId(thanaId, pageable);
         return ResponseEntity.ok(unions);

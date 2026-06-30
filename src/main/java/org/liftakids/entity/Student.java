@@ -1,9 +1,7 @@
 package org.liftakids.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.Where;
@@ -14,15 +12,17 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-@Data
+@Setter
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "student")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Student {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long studentId;
 
     private String studentName;
@@ -56,7 +56,7 @@ public class Student {
     private boolean isSponsored = false;
 
     @OneToMany(mappedBy = "student")
-    @Where(clause = "status = 'COMPLETED'")
+    @Where(clause = "status = 'ACTIVE'")
     private List<Sponsorship> currentSponsorships = new ArrayList<>();
 
     @Column(name = "required_monthly_support", precision = 10, scale = 2)

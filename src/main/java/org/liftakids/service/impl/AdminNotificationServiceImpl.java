@@ -902,12 +902,34 @@ public Page<NotificationResponseDTO> getAllNotificationsForAdmin(Pageable pageab
     }
 
     public Long getAdminUnreadCount(Long adminId) {
+        log.info("=== GETTING ADMIN UNREAD COUNT ===");
+        log.info("Admin ID: {}", adminId);
+
+        Long count;
+
         if (adminId != null) {
-            return notificationRepository.countByUserTypeAndUserIdAndStatus(
+            count = notificationRepository.countByUserTypeAndUserIdAndStatus(
                     UserType.ADMIN, adminId, NotificationStatus.UNREAD);
+            log.info("Count for admin {}: {}", adminId, count);
         } else {
-            return notificationRepository.countByUserTypeAndStatus(
+            count = notificationRepository.countByUserTypeAndStatus(
                     UserType.ADMIN, NotificationStatus.UNREAD);
+            log.info("Count for all admins: {}", count);
         }
+
+        // Also log all admin notifications for debugging
+        List<Notification> adminNotifications = notificationRepository.findByUserTypeAndUserIdOrderByCreatedAtDesc(
+                UserType.ADMIN, adminId);
+        log.info("Total admin notifications for {}: {}", adminId, adminNotifications.size());
+
+        for (Notification notif : adminNotifications) {
+            log.info("Notification - ID: {}, Title: {}, Status: {}, Created: {}",
+                    notif.getNotificationId(),
+                    notif.getTitle(),
+                    notif.getStatus(),
+                    notif.getCreatedAt());
+        }
+
+        return count != null ? count : 0L;
     }
 }

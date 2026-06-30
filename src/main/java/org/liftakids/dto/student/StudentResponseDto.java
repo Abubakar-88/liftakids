@@ -34,7 +34,6 @@ public class StudentResponseDto {
     private List<SponsorInfoDto> sponsors;
     private InstitutionResponseDto institutions;
 
-
     @Data
     @Builder
     public static class SponsorInfoDto {

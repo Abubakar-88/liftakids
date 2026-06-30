@@ -1,6 +1,5 @@
 package org.liftakids.dto.payment;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.Valid;
@@ -96,6 +95,5 @@ public class PaymentRequestDto {
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate != null ? endDate.withDayOfMonth(endDate.lengthOfMonth()) : null;
     }
-
 
 }

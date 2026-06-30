@@ -12,11 +12,6 @@ import org.liftakids.entity.enm.UserType;
 
 import java.time.LocalDateTime;
 @Entity
-//@Table(name = "notifications", indexes = {
-//        @Index(name = "idx_notification_recipient", columnList = "userType, userId"),
-//        @Index(name = "idx_notification_status", columnList = "status"),
-//        @Index(name = "idx_notification_created", columnList = "createdAt DESC")
-//})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

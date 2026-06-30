@@ -4,7 +4,8 @@ public enum SponsorshipStatus {
     PENDING_PAYMENT,
     ACTIVE,
     PAUSED,
-    COMPLETED,
+    REMOVED,
+    COAMPLETED,
     CANCELLED,
     EXPIRED
 }

@@ -15,6 +15,7 @@ import java.util.List;
 public class SystemAdmin {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "admin_id")
     private Long adminId;
 
     private String name;

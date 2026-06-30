@@ -1,6 +1,9 @@
 package org.liftakids.dto.student;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import org.liftakids.entity.FinancialRank;
 import org.springframework.web.multipart.MultipartFile;

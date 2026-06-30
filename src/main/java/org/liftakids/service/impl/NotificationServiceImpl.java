@@ -15,7 +15,6 @@ import org.liftakids.service.NotificationService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -369,7 +368,7 @@ public class NotificationServiceImpl implements NotificationService {
         switch (type) {
             case PAYMENT_REMINDER:
             case PAYMENT_CONFIRMED:
-                // case PAYMENT_FAILED:
+           // case PAYMENT_FAILED:
                 return "View Payment";
             case SPONSORSHIP_CREATED:
             case SPONSORSHIP_EXPIRED:
@@ -386,7 +385,7 @@ public class NotificationServiceImpl implements NotificationService {
     // Helper method to determine priority based on type
     private String getPriorityByType(NotificationType type) {
         switch (type) {
-            // case PAYMENT_FAILED:
+           // case PAYMENT_FAILED:
             case ADMIN_ALERT:
             case SECURITY_ALERT:
                 return "HIGH";
@@ -616,48 +615,48 @@ public class NotificationServiceImpl implements NotificationService {
             return notificationRepository.findByUserTypeOrderByCreatedAtDesc(UserType.ADMIN);
         }
     }
-    // Payment Notification for institution
-    @Override
-    @Transactional
-    public void sendPendingPaymentNotification(
-            Sponsorship sponsorship,
-            Payment payment,
-            boolean isExistingSponsor) {
+// Payment Notification for institution
+@Override
+@Transactional
+public void sendPendingPaymentNotification(
+        Sponsorship sponsorship,
+        Payment payment,
+        boolean isExistingSponsor) {
 
-        Institutions institution =
-                sponsorship.getStudent().getInstitution();
+    Institutions institution =
+            sponsorship.getStudent().getInstitution();
 
-        Donor donor = sponsorship.getDonor();
+    Donor donor = sponsorship.getDonor();
 
-        String title = isExistingSponsor
-                ? "Existing Sponsor Payment Pending"
-                : "New Sponsorship Payment Pending";
+    String title = isExistingSponsor
+            ? "Existing Sponsor Payment Pending"
+            : "New Sponsorship Payment Pending";
 
-        String message = isExistingSponsor
-                ? String.format(
-                "Donor %s submitted a payment for student %s. Please verify and confirm the payment.",
-                donor.getName(),
-                sponsorship.getStudent().getStudentName()
-        )
-                : String.format(
-                "New sponsor %s submitted sponsorship payment for student %s. Please verify and confirm.",
-                donor.getName(),
-                sponsorship.getStudent().getStudentName()
-        );
+    String message = isExistingSponsor
+            ? String.format(
+            "Donor %s submitted a payment for student %s. Please verify and confirm the payment.",
+            donor.getName(),
+            sponsorship.getStudent().getStudentName()
+    )
+            : String.format(
+            "New sponsor %s submitted sponsorship payment for student %s. Please verify and confirm.",
+            donor.getName(),
+            sponsorship.getStudent().getStudentName()
+    );
 
-        NotificationType type = isExistingSponsor
-                ? NotificationType.EXISTING_SPONSOR_PAYMENT
-                : NotificationType.PENDING_PAYMENT;
+    NotificationType type = isExistingSponsor
+            ? NotificationType.EXISTING_SPONSOR_PAYMENT
+            : NotificationType.PENDING_PAYMENT;
 
-        createInstitutionNotification(
-                institution,
-                title,
-                message,
-                type,
-                "/institution/payment-confirmation",
-                "PAYMENT",
-                payment.getId()
-        );
-    }
+    createInstitutionNotification(
+            institution,
+            title,
+            message,
+            type,
+            "/institution/payment-confirmation",
+            "PAYMENT",
+            payment.getId()
+    );
+}
 
 }

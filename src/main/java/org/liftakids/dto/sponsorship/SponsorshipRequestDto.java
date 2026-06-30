@@ -1,6 +1,5 @@
 package org.liftakids.dto.sponsorship;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.*;
 import lombok.Data;

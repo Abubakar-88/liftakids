@@ -37,7 +37,7 @@ public class Donor {
             message = "Invalid international phone number"
     )
     private String phone;
-
+    @NotBlank(message = "Address is required")
     private String address;
 
     @Enumerated(EnumType.STRING)
@@ -48,7 +48,7 @@ public class Donor {
     @OneToMany(mappedBy = "donor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Sponsorship> sponsorships = new ArrayList<>();
 
-    @OneToMany(mappedBy = "donor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "donor", cascade = CascadeType.ALL, orphanRemoval = true)
     @Where(clause = "status = 'ACTIVE'")
     private List<Sponsorship> activeSponsorships = new ArrayList<>();
 

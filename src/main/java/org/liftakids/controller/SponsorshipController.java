@@ -2,6 +2,7 @@ package org.liftakids.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.liftakids.dto.payment.PaymentRequestDto;
 import org.liftakids.dto.payment.PaymentResponseDto;
 import org.liftakids.dto.sponsorship.*;
@@ -22,9 +23,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-
+import java.util.stream.Collectors;
+@Slf4j
 @RestController
 @RequestMapping("/api/sponsorships")
 @RequiredArgsConstructor
@@ -60,23 +64,23 @@ public class SponsorshipController {
         }
     }
 
-//    @GetMapping
-//    public ResponseEntity<List<SponsorshipResponseDto>> getSponsorshipsByDonorAndStudent(
-//            @RequestParam Long donorId,
-//            @RequestParam Long studentId) {
-//
-//        List<Sponsorship> sponsorships = sponsorshipRepository.findByDonorIdAndStudentId(donorId, studentId);
-//
-//        if (sponsorships.isEmpty()) {
-//            return ResponseEntity.notFound().build();
-//        }
-//
-//        List<SponsorshipResponseDto> response = sponsorships.stream()
-//                .map(sponsorship -> modelMapper.map(sponsorship, SponsorshipResponseDto.class))
-//                .collect(Collectors.toList());
-//
-//        return ResponseEntity.ok(response);
-//    }
+    @GetMapping("/existwith")
+    public ResponseEntity<List<SponsorshipResponseDto>> getSponsorshipsByDonorAndStudent(
+            @RequestParam Long donorId,
+            @RequestParam Long studentId) {
+
+        List<Sponsorship> sponsorships = sponsorshipRepository.findByDonorIdAndStudentId(donorId, studentId);
+
+        if (sponsorships.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<SponsorshipResponseDto> response = sponsorships.stream()
+                .map(sponsorship -> modelMapper.map(sponsorship, SponsorshipResponseDto.class))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
 
 
 
@@ -201,5 +205,59 @@ public class SponsorshipController {
 
         return ResponseEntity.ok(sponsorshipService.searchSponsorships(request, pageable));
     }
+    // ========== CANCEL SPONSORSHIP (Donor) ==========
+    @PostMapping("/{sponsorshipId}/cancel")
+    public ResponseEntity<Map<String, Object>> cancelSponsorship(
+            @PathVariable Long sponsorshipId,
+            @RequestParam Long donorId,
+            @RequestParam(required = false) String reason) {
 
+        log.info("POST /api/sponsorships/{}/cancel - donorId: {}, reason: {}", sponsorshipId, donorId, reason);
+
+        String cancelReason = (reason == null || reason.trim().isEmpty())
+                ? "Cancelled by donor"
+                : reason;
+
+        SponsorshipResponseDto response = sponsorshipService.cancelSponsorship(sponsorshipId, donorId, cancelReason);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("message", "Sponsorship cancelled successfully");
+        result.put("sponsorship", response);
+
+        return ResponseEntity.ok(result);
+    }
+
+    // ========== REMOVE SPONSORSHIP (Admin only) ==========
+    @DeleteMapping("/{sponsorshipId}/admin/{adminId}")
+    public ResponseEntity<Map<String, Object>> removeSponsorship(
+            @PathVariable Long sponsorshipId,
+            @PathVariable Long adminId) {
+
+        log.info("DELETE /api/sponsorships/{}/admin/{}", sponsorshipId, adminId);
+
+        SponsorshipResponseDto response = sponsorshipService.removeSponsorship(sponsorshipId, adminId);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("message", "Sponsorship removed successfully");
+        result.put("sponsorship", response);
+
+        return ResponseEntity.ok(result);
+    }
+    // ========== CHECK IF CAN BE CANCELLED ==========
+    @GetMapping("/{sponsorshipId}/can-cancel")
+    public ResponseEntity<Map<String, Boolean>> canBeCancelled(
+            @PathVariable Long sponsorshipId,
+            @RequestParam Long donorId) {
+
+        log.info("GET /api/sponsorships/{}/can-cancel - donorId: {}", sponsorshipId, donorId);
+
+        boolean canCancel = sponsorshipService.canBeCancelled(sponsorshipId, donorId);
+
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("canCancel", canCancel);
+
+        return ResponseEntity.ok(response);
+    }
 }

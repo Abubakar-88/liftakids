@@ -23,5 +23,11 @@ public interface SponsorshipService {
     List<SponsorshipResponseDto> getPendingSponsorshipsForInstitution(Long institutionId);
     List<SponsorshipResponseDto> getPendingPaymentSponsorshipsOptimized(Long institutionId);
     Map<String, Long> getSponsorshipStatusCounts(Long institutionId);
+    //Cancel or remove
+    // 🔥 NEW METHODS FOR CANCEL/REMOVE
+    SponsorshipResponseDto cancelSponsorship(Long sponsorshipId, Long donorId, String reason);
+    SponsorshipResponseDto removeSponsorship(Long sponsorshipId, Long adminId);
+    //SponsorshipResponseDto activateSponsorship(Long sponsorshipId);
+    boolean canBeCancelled(Long sponsorshipId, Long donorId);
 
 }

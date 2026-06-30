@@ -1,12 +1,12 @@
 package org.liftakids.controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.liftakids.dto.institute.*;
 import org.liftakids.dto.student.StudentResponseDto;
 import org.liftakids.exception.ErrorResponse;
 import org.liftakids.exception.ResourceNotFoundException;
 import org.liftakids.service.InstitutionService;
+import org.liftakids.service.impl.InstitutionServiceImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -14,6 +14,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -119,7 +121,7 @@ public class InstitutionController {
     public ResponseEntity<List<InstitutionResponseDto>> getApprovedInstitutions() {
         return ResponseEntity.ok(institutionService.getApprovedInstitutions());
     }
-    
+
     @PatchMapping("/{institutionId}/status")
     public ResponseEntity<InstitutionResponseDto> updateInstitutionStatus(
             @PathVariable Long institutionId,

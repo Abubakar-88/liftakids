@@ -38,7 +38,6 @@ public class StudentServiceImpl implements StudentService {
     private final SponsorshipRepository sponsorshipRepository;
     private final Logger log = LoggerFactory.getLogger(StudentService.class);
 
-    @Transactional
     @Override
     public StudentResponseDto createStudent(StudentRequestDto requestDto, MultipartFile image) throws IOException {
 
@@ -104,7 +103,6 @@ public class StudentServiceImpl implements StudentService {
         return modelMapper.map(updatedStudent, StudentResponseDto.class);
     }
 
-    @Transactional
     @Override
     public StudentResponseDto getStudentById(Long id) {
         Student student = studentRepository.findById(id)
@@ -113,6 +111,7 @@ public class StudentServiceImpl implements StudentService {
         StudentResponseDto response = modelMapper.map(student, StudentResponseDto.class);
         response.setInstitutionsId(student.getInstitution().getInstitutionsId());
         response.setSponsored(student.isSponsored());
+
         response.setInstitutionPhone(student.getInstitution().getPhone());
         response.setInstitutionName(student.getInstitution().getInstitutionName());
         // Also set the complete InstitutionResponseDto
@@ -128,9 +127,24 @@ public class StudentServiceImpl implements StudentService {
 
         response.setFullySponsored(sponsored.compareTo(required) >= 0);
         response.setSponsoredAmount(sponsored);
+        List<StudentResponseDto.SponsorInfoDto> sponsorDtos =
+                student.getCurrentSponsorships().stream()
+                        .map(sponsorship -> StudentResponseDto.SponsorInfoDto.builder()
+                                .donorId(sponsorship.getDonor().getDonorId())
+                                .sponsorshipId(sponsorship.getId())
+                                .donorName(sponsorship.getDonor().getName())
+                                .monthlyAmount(sponsorship.getMonthlyAmount())
+                                .startDate(sponsorship.getStartDate())
+                                .endDate(sponsorship.getEndDate())
+                                .status(sponsorship.getStatus())
+                                .paidUpTo(sponsorship.getPaidUpTo())
+                                .build())
+                        .toList();
+
+        response.setSponsors(sponsorDtos);
         return response;
     }
-    @Transactional
+
     @Override
     public List<StudentResponseDto> getAllStudents() {
         return studentRepository.findAll().stream()
@@ -154,6 +168,13 @@ public class StudentServiceImpl implements StudentService {
         ).getYears();
     }
     @Transactional
+    @Override
+    public List<StudentResponseDto> getTopUnsponsoredUrgentStudents(int limit) {
+        List<Student> students = studentRepository.findTopUnsponsoredUrgentStudents(limit);
+        return students.stream()
+                .map(this::convertToStudentResponseDto)
+                .collect(Collectors.toList());
+    }
     @Override
     public Page<StudentResponseDto> getAllStudents(Pageable pageable) {
         Page<Student> studentPage = studentRepository.findAllWithSponsorships(pageable);
@@ -225,7 +246,6 @@ public class StudentServiceImpl implements StudentService {
 //            return dto;
 //        });
 //    }
-@Transactional
 @Override
 public List<StudentResponseDto> getStudentsByInstitution(Long institutionId) {
     // Check if institution exists
@@ -244,7 +264,6 @@ public List<StudentResponseDto> getStudentsByInstitution(Long institutionId) {
             .map(this::convertToStudentResponseDto)
             .collect(Collectors.toList());
 }
-    @Transactional
     @Override
     public Page<StudentResponseDto> getStudentsByInstitution(Long institutionId, Pageable pageable) {
         // Verify institution exists
@@ -344,6 +363,20 @@ public List<StudentResponseDto> getStudentsByInstitution(Long institutionId) {
 
     // Helper method to convert Sponsorship to SponsorInfoDto
     private StudentResponseDto.SponsorInfoDto convertToSponsorInfoDto(Sponsorship sponsorship) {
+
+        Payment latestPayment = sponsorship.getPayments()
+                .stream()
+                .sorted((p1, p2) ->
+                        p2.getPaymentDate().compareTo(p1.getPaymentDate()))
+                .findFirst()
+                .orElse(null);
+
+        PaymentStatus paymentStatus =
+                latestPayment != null
+                        ? latestPayment.getStatus()
+                        : null;
+
+
         return StudentResponseDto.SponsorInfoDto.builder()
                 .donorId(sponsorship.getDonor().getDonorId())
                 .donorName(sponsorship.getDonor().getName())
@@ -352,6 +385,7 @@ public List<StudentResponseDto> getStudentsByInstitution(Long institutionId) {
                 .startDate(sponsorship.getStartDate())
                 .endDate(sponsorship.getEndDate())
                 .status(sponsorship.getStatus())
+                .paymentStatus(paymentStatus)
                 .lastPaymentDate(sponsorship.getLastPaymentDate())
                 .paidUpTo(sponsorship.getPaidUpTo())
                 .monthsPaid(sponsorship.getMonthsPaid())
@@ -368,7 +402,7 @@ public List<StudentResponseDto> getStudentsByInstitution(Long institutionId) {
         }
 
         return student.getCurrentSponsorships().stream()
-                .filter(sponsorship -> sponsorship.getStatus() == SponsorshipStatus.COMPLETED)
+                .filter(sponsorship -> sponsorship.getStatus() == SponsorshipStatus.ACTIVE)
                 .map(Sponsorship::getTotalPaidAmount)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -386,13 +420,14 @@ public List<StudentResponseDto> getStudentsByInstitution(Long institutionId) {
         InstitutionResponseDto institutionDto = modelMapper.map(student.getInstitution(), InstitutionResponseDto.class);
         dto.setInstitutions(institutionDto);
 
+
         // Calculate sponsorship details
         BigDecimal totalSponsoredAmount = BigDecimal.ZERO;
         List<StudentResponseDto.SponsorInfoDto> sponsorInfoList = new ArrayList<>();
 
         if (student.getCurrentSponsorships() != null) {
             for (Sponsorship sponsorship : student.getCurrentSponsorships()) {
-                if (sponsorship.getStatus() == SponsorshipStatus.COMPLETED) {
+                if (sponsorship.getStatus() == SponsorshipStatus.ACTIVE) {
                     totalSponsoredAmount = totalSponsoredAmount.add(sponsorship.getTotalPaidAmount());
 
                     StudentResponseDto.SponsorInfoDto sponsorInfo = convertToSponsorInfoDto(sponsorship);
@@ -408,8 +443,6 @@ public List<StudentResponseDto> getStudentsByInstitution(Long institutionId) {
 
         return dto;
     }
-    @Transactional
-    @Override
     public List<StudentResponseDto> searchStudentsByInstitution(
             Long institutionId,
             String studentName,
@@ -443,7 +476,7 @@ public List<StudentResponseDto> getStudentsByInstitution(Long institutionId) {
 //                .map(this::convertToStudentResponseDto)  // separate method ব্যবহার করুন
 //                .collect(Collectors.toList());
     }
-//    @Transactional
+
 //    @Override
 //    public List<StudentResponseDto> searchStudents(String studentName, String guardianName, String gender, String contactNumber) {
 //        List<Student> students = studentRepository.searchStudents(studentName, guardianName,contactNumber);
@@ -477,7 +510,6 @@ public void deleteStudent(Long studentId) {
     studentRepository.delete(student);
 }
 
-    @Transactional
     @Override
     public List<StudentResponseDto> getTop3UnsponsoredUrgentStudents() {
         List<Student> students = studentRepository.findTop3UnsponsoredUrgentStudents();
@@ -485,14 +517,32 @@ public void deleteStudent(Long studentId) {
                 .map(this::convertToStudentResponseDto)
                 .collect(Collectors.toList());
     }
-    @Transactional
     @Override
-    public List<StudentResponseDto> getTopUnsponsoredUrgentStudents(int limit) {
-        List<Student> students = studentRepository.findTopUnsponsoredUrgentStudents(limit);
-        return students.stream()
-                .map(this::convertToStudentResponseDto)
-                .collect(Collectors.toList());
+    public Page<StudentResponseDto> getStudentsByDistrict(Long districtId, Pageable pageable) {
+        Page<Student> students = studentRepository.findByInstitution_District_DistrictId(districtId, pageable);
+        return students.map(this::convertToStudentResponseDto);
     }
+
+    @Override
+    public Page<StudentResponseDto> getStudentsByThana(Long thanaId, Pageable pageable) {
+        Page<Student> students = studentRepository.findByInstitution_Thana_ThanaId(thanaId, pageable);
+        return students.map(this::convertToStudentResponseDto);
+    }
+
+    @Override
+    public Page<StudentResponseDto> getStudentsByUnion(Long unionId, Pageable pageable) {
+        Page<Student> students = studentRepository.findStudentsByUnionId(unionId, pageable);
+        return students.map(this::convertToStudentResponseDto);
+    }
+
+    @Override
+    public Page<StudentResponseDto> getStudentsByDivision(Long divisionId, Pageable pageable) {
+        Page<Student> students = studentRepository.findByInstitution_Division_DivisionId(divisionId, pageable);
+        return students.map(this::convertToStudentResponseDto);
+    }
+
+
+
 //    @Override
 //    public List<StudentResponseDto> getUnsponsoredStudentsByFinancialRank(String financialRank, int limit) {
 //        List<Student> students = studentRepository.findTopNBySponsoredFalseAndFinancialRankAndStatus(

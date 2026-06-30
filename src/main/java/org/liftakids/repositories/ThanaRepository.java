@@ -2,9 +2,6 @@ package org.liftakids.repositories;
 
 import org.liftakids.entity.address.Districts;
 import org.liftakids.entity.address.Thanas;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,9 +13,6 @@ public interface ThanaRepository extends JpaRepository<Thanas,Long> {
 
     @Query("SELECT t FROM Thanas t WHERE t.district.districtId = :districtId")
     List<Thanas> findByDistrictId(Long districtId);
-
-//    @EntityGraph(attributePaths = {"district", "district.division", "unionOrAreas"})
-//    List<Thanas> findByDistrictId(Long districtId);
     // OR using JOIN FETCH
     @Query("SELECT t FROM Thanas t JOIN FETCH t.district d JOIN FETCH d.division WHERE t.thanaId = :thana")
     Optional<Thanas> findWithDivisionById(@Param("thanaId") Long thanaId);
@@ -31,18 +25,11 @@ public interface ThanaRepository extends JpaRepository<Thanas,Long> {
 
     @Query("SELECT t FROM Thanas t WHERE t.district.districtId IN :districtIds")
     List<Thanas> findByDistrictIdIn(@Param("districtIds") List<Long> districtIds);
-
     @Query("SELECT DISTINCT t FROM Thanas t " +
             "LEFT JOIN FETCH t.district d " +
             "LEFT JOIN FETCH d.division " +
-            "LEFT JOIN FETCH t.unionOrAreas " +
-            "WHERE d.districtId = :districtId")
-    List<Thanas> findByDistrictIdWithFetchJoin(@Param("districtId") Long districtId);
+            "WHERE t.district.districtId = :districtId")
+    List<Thanas> findByDistrictIdWithEagerFetch(@Param("districtId") Long districtId);
 
-    @Query("SELECT DISTINCT t FROM Thanas t " +
-            "LEFT JOIN FETCH t.district d " +
-            "LEFT JOIN FETCH d.division " +
-            "LEFT JOIN FETCH t.unionOrAreas")
-    Page<Thanas> findAllWithFetch(Pageable pageable);
 
 }

@@ -13,7 +13,6 @@ import org.liftakids.entity.enm.UserType;
 
 import java.time.LocalDateTime;
 
-
 @Data
 @NoArgsConstructor
 @Builder

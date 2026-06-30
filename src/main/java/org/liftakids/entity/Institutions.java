@@ -3,9 +3,7 @@ package org.liftakids.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.liftakids.entity.address.Districts;
 import org.liftakids.entity.address.Divisions;
 import org.liftakids.entity.address.Thanas;
@@ -13,11 +11,12 @@ import org.liftakids.entity.address.UnionOrArea;
 import org.liftakids.entity.enm.InstitutionStatus;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "institutions")
@@ -119,9 +118,9 @@ public class Institutions {
     @Column(name = "about_institution", nullable = false, length = 1500)
     private String aboutInstitution;
 
-    @OneToMany(mappedBy = "institution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "institution", cascade = CascadeType.ALL)
     @JsonBackReference
-    private List<Student> students =  new ArrayList<>();
+    private List<Student> students;
 
     // Helper methods
     @PrePersist

@@ -92,4 +92,5 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findPendingPaymentsForExistingSponsors(
             @Param("institutionId") Long institutionId);
 
+
 }

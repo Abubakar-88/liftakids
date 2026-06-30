@@ -19,7 +19,7 @@ public class ManualPaymentRequestDto {
 
     @NotNull
     private LocalDate endDate;
-
+    private LocalDate paidUpto;
     @NotNull
     private BigDecimal monthlyAmount;
     private String paymentMethod;

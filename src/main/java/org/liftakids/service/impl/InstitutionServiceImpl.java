@@ -53,7 +53,7 @@ public class InstitutionServiceImpl implements InstitutionService {
     private final SystemAdminRepository systemAdminRepository;
 
     private static final Logger log = LoggerFactory.getLogger(InstitutionServiceImpl.class.getName());
-    @Transactional
+
     @Override
     public InstitutionResponseDto createInstitution(InstitutionRequestDto requestDto) {
         // Fetch all location entities
@@ -104,8 +104,6 @@ public class InstitutionServiceImpl implements InstitutionService {
 
         return dto;
     }
-    @Transactional
-    @Override
     public LoginResponseDto login(LoginRequestDto loginRequest) {
         Optional<Institutions> institutionOpt = institutionRepository.findByEmail(loginRequest.getEmail());
 
@@ -127,7 +125,6 @@ public class InstitutionServiceImpl implements InstitutionService {
 
 
     // Filtered (no pagination)
-    @Transactional
     @Override
     public List<InstitutionBasicResponse> getByUnionOrArea(Long unionOrAreaId) {
         return institutionRepository.findByUnionOrAreaId(unionOrAreaId)
@@ -143,8 +140,6 @@ public class InstitutionServiceImpl implements InstitutionService {
                 .collect(Collectors.toList());
     }
 
-   @Transactional
-   @Override
     public Page<InstitutionBasicResponse> getAllInstitutions(Pageable pageable) {
         validateSortProperties(pageable.getSort());
 
@@ -332,7 +327,7 @@ public class InstitutionServiceImpl implements InstitutionService {
 
         return dto;
     }
-   @Transactional
+
     @Override
     public InstitutionResponseDto updateInstitution(Long id, UpdateInstitutionDto requestDto) {
         Institutions existing = institutionRepository.findById(id)

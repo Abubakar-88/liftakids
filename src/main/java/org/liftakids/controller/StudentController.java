@@ -34,20 +34,20 @@ public class StudentController {
 
     private final StudentService studentService;
     private final SponsorshipRepository sponsorshipRepository;
-//    @PostMapping("/addStudent")
+    //    @PostMapping("/addStudent")
 //    public ResponseEntity<StudentResponseDto> createStudent(@Valid @RequestBody StudentRequestDto requestDto) {
 //        return new ResponseEntity<>(studentService.createStudent(requestDto), HttpStatus.CREATED);
 //    }
-@PostMapping(value = "/addStudent", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-public ResponseEntity<StudentResponseDto> createStudent(
-        @RequestPart("studentData") @Valid StudentRequestDto requestDto,
-        @RequestPart("image") MultipartFile image) {
-    try {
-        return new ResponseEntity<>(studentService.createStudent(requestDto, image), HttpStatus.CREATED);
-    } catch (IOException e) {
-        throw new RuntimeException("Failed to process image", e);
+    @PostMapping(value = "/addStudent", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<StudentResponseDto> createStudent(
+            @RequestPart("studentData") @Valid StudentRequestDto requestDto,
+            @RequestPart("image") MultipartFile image) {
+        try {
+            return new ResponseEntity<>(studentService.createStudent(requestDto, image), HttpStatus.CREATED);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to process image", e);
+        }
     }
-}
 //    @PutMapping("/{studentId}")
 //    public ResponseEntity<StudentResponseDto> updateStudent(
 //            @PathVariable Long studentId,
@@ -138,6 +138,16 @@ public ResponseEntity<StudentResponseDto> createStudent(
         return ResponseEntity.ok(studentService.searchStudentsByInstitution(
                 institutionId, studentName, guardianName, contactNumber));
     }
+
+    //    @GetMapping("/search")
+//    public ResponseEntity<List<StudentResponseDto>> searchStudents(
+//            @RequestParam(required = false) String studentName,
+//            @RequestParam(required = false) String guardianName,
+//            @RequestParam(required = false) String gender,
+//            @RequestParam(required = false) String contactNumber) {
+//
+//        return ResponseEntity.ok(studentService.searchStudents(studentName, guardianName, gender, contactNumber));
+//    }
     @GetMapping("/search")
     public ResponseEntity<Page<StudentResponseDto>> searchStudents(
             @RequestParam(required = false) String studentName,
@@ -168,15 +178,6 @@ public ResponseEntity<StudentResponseDto> createStudent(
 
         return ResponseEntity.ok(resultPage);
     }
-//    @GetMapping("/search")
-//    public ResponseEntity<List<StudentResponseDto>> searchStudents(
-//            @RequestParam(required = false) String studentName,
-//            @RequestParam(required = false) String guardianName,
-//            @RequestParam(required = false) String gender,
-//            @RequestParam(required = false) String contactNumber) {
-//
-//        return ResponseEntity.ok(studentService.searchStudents(studentName, guardianName, gender, contactNumber));
-//    }
 
     @DeleteMapping("/{studentId}")
     public ResponseEntity<Void> deleteStudent(@PathVariable Long studentId) {
@@ -188,11 +189,7 @@ public ResponseEntity<StudentResponseDto> createStudent(
     public ResponseEntity<List<StudentResponseDto>> getTop3UnsponsoredUrgentStudents() {
         return ResponseEntity.ok(studentService.getTop3UnsponsoredUrgentStudents());
     }
-    @GetMapping("/unsponsored/urgent/top")
-    public ResponseEntity<List<StudentResponseDto>> getTopUnsponsoredUrgentStudents(
-            @RequestParam(value = "limit", defaultValue = "4") int limit) {
-        return ResponseEntity.ok(studentService.getTopUnsponsoredUrgentStudents(limit));
-    }
+
     @GetMapping("/{studentId}/pending-sponsorships")
     public ResponseEntity<List<StudentResponseDto>> getPendingSponsorships(
             @PathVariable Long studentId,
@@ -229,6 +226,65 @@ public ResponseEntity<StudentResponseDto> createStudent(
                     .body(false);
         }
     }
+    @GetMapping("/unsponsored/urgent/top")
+    public ResponseEntity<List<StudentResponseDto>> getTopUnsponsoredUrgentStudents(
+            @RequestParam(value = "limit", defaultValue = "4") int limit) {
+        return ResponseEntity.ok(studentService.getTopUnsponsoredUrgentStudents(limit));
+    }
+
+    // 1. Get students by DISTRICT
+    @GetMapping("/by-district/{districtId}")
+    public ResponseEntity<Page<StudentResponseDto>> getStudentsByDistrict(
+            @PathVariable Long districtId,
+            @PageableDefault(
+                    size = 10,
+                    page = 0,
+                    sort = "studentName",
+                    direction = Sort.Direction.ASC
+            ) Pageable pageable) {
+        return ResponseEntity.ok(studentService.getStudentsByDistrict(districtId, pageable));
+    }
+
+    // 2. Get students by THANA
+    @GetMapping("/by-thana/{thanaId}")
+    public ResponseEntity<Page<StudentResponseDto>> getStudentsByThana(
+            @PathVariable Long thanaId,
+            @PageableDefault(
+                    size = 10,
+                    page = 0,
+                    sort = "studentName",
+                    direction = Sort.Direction.ASC
+            ) Pageable pageable) {
+        return ResponseEntity.ok(studentService.getStudentsByThana(thanaId, pageable));
+    }
+
+    // 3. Get students by UNION
+    @GetMapping("/by-union/{unionId}")
+    public ResponseEntity<Page<StudentResponseDto>> getStudentsByUnion(
+            @PathVariable Long unionId,
+            @PageableDefault(
+                    size = 10,
+                    page = 0,
+                    sort = "studentName",
+                    direction = Sort.Direction.ASC
+            ) Pageable pageable) {
+        return ResponseEntity.ok(studentService.getStudentsByUnion(unionId, pageable));
+    }
+
+    // 4. Get students by DIVISION
+    @GetMapping("/by-division/{divisionId}")
+    public ResponseEntity<Page<StudentResponseDto>> getStudentsByDivision(
+            @PathVariable Long divisionId,
+            @PageableDefault(
+                    size = 10,
+                    page = 0,
+                    sort = "studentName",
+                    direction = Sort.Direction.ASC
+            ) Pageable pageable) {
+        return ResponseEntity.ok(studentService.getStudentsByDivision(divisionId, pageable));
+    }
+
+
 
 
 //    @GetMapping("/unsponsored/urgent")

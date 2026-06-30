@@ -23,7 +23,7 @@ public interface StudentService {
             String studentName,
             String guardianName,
             String contactNumber);
-    Page<StudentResponseDto> searchStudents(String studentName, String guardianName, String gender, String contactNumber, Pageable pageable);
+    Page<StudentResponseDto> searchStudents(String studentName, String guardianName, String gender, String contactNumber,Pageable pageable);
     Page<StudentResponseDto> getAllStudents(Pageable pageable);
     void deleteStudent(Long studentId);
     List<StudentResponseDto> getTop3UnsponsoredUrgentStudents();
@@ -31,4 +31,8 @@ public interface StudentService {
     List<StudentResponseDto> getStudentPendingSponsorships(Long studentId, LocalDate fromDate);
     public boolean hasPendingSponsorships(Long studentId, LocalDate fromDate);
     List<StudentResponseDto> getTopUnsponsoredUrgentStudents(int limit);
+    Page<StudentResponseDto> getStudentsByDistrict(Long districtId, Pageable pageable);
+    Page<StudentResponseDto> getStudentsByThana(Long thanaId, Pageable pageable);
+    Page<StudentResponseDto> getStudentsByUnion(Long unionId, Pageable pageable);
+    Page<StudentResponseDto> getStudentsByDivision(Long divisionId, Pageable pageable);
 }

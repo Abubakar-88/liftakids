@@ -1,11 +1,14 @@
 package org.liftakids.controller;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.liftakids.dto.notifications.*;
 import org.liftakids.entity.Notification;
+import org.liftakids.entity.SystemAdmin;
 import org.liftakids.entity.enm.NotificationStatus;
 import org.liftakids.entity.enm.NotificationType;
 import org.liftakids.entity.enm.UserType;
+import org.liftakids.repositories.SystemAdminRepository;
 import org.liftakids.service.AdminNotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/admin/notifications")
@@ -28,7 +32,7 @@ import java.util.Map;
 public class AdminNotificationController {
 
     private final AdminNotificationService adminNotificationService;
-
+    private final SystemAdminRepository systemAdminRepository;
     // ============= GET ALL NOTIFICATIONS (PAGINATED) =============
     @GetMapping("/all")
     public ResponseEntity<Page<NotificationResponseDTO>> getAllNotifications(
@@ -396,14 +400,27 @@ public class AdminNotificationController {
     public ResponseEntity<Map<String, Object>> getUnreadCountForAdmin(
             @RequestParam Long adminId) {
 
-        log.info("Getting unread count for admin: {}", adminId);
+        log.info("=== GET UNREAD COUNT API CALLED ===");
+        log.info("Admin ID from request: {}", adminId);
+
+        // Verify admin exists (optional)
+        Optional<SystemAdmin> admin = systemAdminRepository.findByAdminId(adminId);
+        if (admin.isEmpty()) {
+            log.warn("Admin not found with ID: {}", adminId);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Admin not found");
+            errorResponse.put("adminId", adminId);
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
 
         long unreadCount = adminNotificationService.getAdminUnreadCount(adminId);
+        log.info("Unread count result: {}", unreadCount);
 
         Map<String, Object> response = new HashMap<>();
         response.put("unreadCount", unreadCount);
         response.put("adminId", adminId);
         response.put("timestamp", LocalDateTime.now());
+        response.put("status", "success");
 
         return ResponseEntity.ok(response);
     }

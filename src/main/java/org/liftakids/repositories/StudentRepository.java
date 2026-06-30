@@ -17,12 +17,12 @@ public interface StudentRepository extends JpaRepository<Student,Long> {
 
     List<Student> findByInstitution(Institutions institution);
     @Query("SELECT s FROM Student s WHERE " +
-            "(:studentName IS NULL OR LOWER(s.studentName) LIKE LOWER(CONCAT('%', :studentName, '%'))) AND " +
-            "(:guardianName IS NULL OR LOWER(s.guardianName) LIKE LOWER(CONCAT('%', :guardianName, '%'))) AND " +
-            "(:contactNumber IS NULL OR s.contactNumber LIKE CONCAT('%', :contactNumber, '%'))")
+            "(:studentName IS NULL OR :studentName = '' OR LOWER(s.studentName) LIKE LOWER(CONCAT('%', :studentName, '%'))) AND " +
+            "(:guardianName IS NULL OR :guardianName = '' OR LOWER(s.guardianName) LIKE LOWER(CONCAT('%', :guardianName, '%'))) AND " +
+            "(:contactNumber IS NULL OR :contactNumber = '' OR s.contactNumber LIKE CONCAT('%', :contactNumber, '%'))")
     Page<Student> searchStudents(@Param("studentName") String studentName,
                                  @Param("guardianName") String guardianName,
-                                 @Param("contactNumber") String contactNumber, Pageable pageable);
+                                 @Param("contactNumber") String contactNumber,Pageable pageable);
 
     @Query("SELECT s FROM Student s WHERE s.isSponsored = :status")
     List<Student> findBySponsorshipStatus(@Param("status") boolean status);
@@ -51,8 +51,6 @@ public interface StudentRepository extends JpaRepository<Student,Long> {
     @Query(value = "SELECT * FROM student s WHERE s.is_sponsored = false AND s.financial_rank = 'Urgent' AND s.status = 'ACTIVE' ORDER BY s.created_date DESC LIMIT 3", nativeQuery = true)
     List<Student> findTop3UnsponsoredUrgentStudents();
 
-    @Query(value = "SELECT * FROM student s WHERE s.is_sponsored = false AND s.financial_rank = 'Urgent' AND s.status = 'ACTIVE' ORDER BY s.created_date DESC LIMIT :limit", nativeQuery = true)
-    List<Student> findTopUnsponsoredUrgentStudents(@Param("limit") int limit);
 
 //    @Query("SELECT s FROM Student s WHERE s.sponsored = false AND s.financialRank = 'URGENT' AND s.status = 'ACTIVE' ORDER BY s.createdDate DESC")
 //    List<Student> findUnsponsoredUrgentStudents(Pageable pageable);
@@ -75,5 +73,16 @@ public interface StudentRepository extends JpaRepository<Student,Long> {
             "WHERE sp.status = :status")
     List<Student> findStudentsWithPendingPaymentSponsorships(
             @Param("status") SponsorshipStatus status);
+    @Query(value = "SELECT * FROM student s WHERE s.is_sponsored = false AND s.financial_rank = 'Urgent' AND s.status = 'ACTIVE' ORDER BY s.created_date DESC LIMIT :limit", nativeQuery = true)
+    List<Student> findTopUnsponsoredUrgentStudents(@Param("limit") int limit);
+    // District wise
+    Page<Student> findByInstitution_District_DistrictId(Long districtId, Pageable pageable);
+    // Thana wise
+    Page<Student> findByInstitution_Thana_ThanaId(Long thanaId, Pageable pageable);
 
+    // Union wise
+    @Query("SELECT s FROM Student s WHERE s.institution.unionOrArea.unionOrAreaId = :unionId")
+    Page<Student> findStudentsByUnionId(@Param("unionId") Long unionId, Pageable pageable);
+    // Division wise
+    Page<Student> findByInstitution_Division_DivisionId(Long divisionId, Pageable pageable);
 }

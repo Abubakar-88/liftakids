@@ -1,6 +1,5 @@
 package org.liftakids.service.impl;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.liftakids.dto.thana.ThanaDto;
@@ -61,7 +60,7 @@ public class ThanaServiceImpl implements ThanaService {
 
     @Override
     public Page<ThanaResponseDTO> getAllThanas(Pageable pageable) {
-        Page<Thanas> thanas = thanaRepository.findAllWithFetch(pageable);
+        Page<Thanas> thanas = thanaRepository.findAll(pageable);
         return thanas.map(this::mapToDTO);
     }
 
@@ -83,43 +82,40 @@ public class ThanaServiceImpl implements ThanaService {
 
         return dto;
     }
-    @Transactional
+
     @Override
     public List<ThanaResponseDTO> getThanasByDistrictId(Long districtId) {
-
-        // Fetch Join method
-        List<Thanas> thanas = thanaRepository.findByDistrictIdWithFetchJoin(districtId);
-
-        return thanas.stream()
+        return thanaRepository.findByDistrictIdWithEagerFetch(districtId).stream()
                 .map(thana -> {
                     ThanaResponseDTO dto = new ThanaResponseDTO();
 
-                    // than Mapping
-                    dto.setThanaId(thana.getThanaId());
-                    dto.setThanaName(thana.getThanaName());
+                    // Map Thana fields
+                    dto.setThanaId(thana.getThanaId()); // assuming your entity has getId()
+                    dto.setThanaName(thana.getThanaName()); // assuming your entity has getName()
 
-                    // district Mapping
+                    // Map District fields if available
                     if (thana.getDistrict() != null) {
                         dto.setDistrictId(thana.getDistrict().getDistrictId());
                         dto.setDistrictName(thana.getDistrict().getDistrictName());
 
-                        // division Mapping
+                        // Map Division fields through District
                         if (thana.getDistrict().getDivision() != null) {
                             dto.setDivisionId(thana.getDistrict().getDivision().getDivisionId());
                             dto.setDivisionName(thana.getDistrict().getDivision().getDivisionName());
                         }
                     }
 
-                    // Area mapping
+                    // Map UnionOrAreas if needed
                     if (thana.getUnionOrAreas() != null) {
                         List<UnionOrAreaResponseDTO> unionOrAreaDTOs = thana.getUnionOrAreas().stream()
                                 .map(unionOrArea -> {
                                     UnionOrAreaResponseDTO areaDTO = new UnionOrAreaResponseDTO();
                                     areaDTO.setUnionOrAreaId(unionOrArea.getUnionOrAreaId());
                                     areaDTO.setUnionOrAreaName(unionOrArea.getUnionOrAreaName());
-                                    areaDTO.setThanaId(thana.getThanaId());
                                     areaDTO.setThanaName(thana.getThanaName());
+                                    areaDTO.setThanaId(thana.getThanaId());
 
+                                    // Set district and division info
                                     if (thana.getDistrict() != null) {
                                         areaDTO.setDistrictId(thana.getDistrict().getDistrictId());
                                         areaDTO.setDistrictName(thana.getDistrict().getDistrictName());
@@ -140,8 +136,12 @@ public class ThanaServiceImpl implements ThanaService {
                 })
                 .collect(Collectors.toList());
     }
-
-
+    //    @Override
+//    public List<ThanaResponseDTO> getThanasByDistrictId(Long districtId) {
+//        return thanaRepository.findByDistrictId(districtId).stream()
+//                .map(thana -> modelMapper.map(thana, ThanaResponseDTO.class))
+//                .collect(Collectors.toList());
+//    }
     @Override
     public ThanaResponseDTO updateThana(Long thanaId, ThanaDto thanaRequestDTO) {
         // 1. Fetch the existing thana with complete relationships
