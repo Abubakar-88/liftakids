@@ -1,6 +1,7 @@
 package org.liftakids.service.impl;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.liftakids.dto.donor.*;
 import org.liftakids.entity.Donor;
@@ -93,6 +94,7 @@ public class DonorServiceImpl implements DonorService {
     }
 
     @Override
+    @Transactional
     public DonorResponseDto getDonorById(Long donarId) {
         Donor donor = donorRepository.findById(donarId)
                 .orElseThrow(() -> new RuntimeException("Donor not found with id: " + donarId));
@@ -110,6 +112,7 @@ public class DonorServiceImpl implements DonorService {
     }
 
     @Override
+    @Transactional
     public LoginResponseDto loginDonor(LoginRequestDto loginRequest) {
          //find the donor
         Donor donor = donorRepository.findByEmail(loginRequest.getEmail())

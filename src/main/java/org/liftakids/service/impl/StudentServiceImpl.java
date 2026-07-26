@@ -104,6 +104,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    @Transactional
     public StudentResponseDto getStudentById(Long id) {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
@@ -146,6 +147,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    @Transactional
     public List<StudentResponseDto> getAllStudents() {
         return studentRepository.findAll().stream()
                 .map(student -> {
@@ -176,6 +178,7 @@ public class StudentServiceImpl implements StudentService {
                 .collect(Collectors.toList());
     }
     @Override
+    @Transactional
     public Page<StudentResponseDto> getAllStudents(Pageable pageable) {
         Page<Student> studentPage = studentRepository.findAllWithSponsorships(pageable);
 
@@ -247,6 +250,7 @@ public class StudentServiceImpl implements StudentService {
 //        });
 //    }
 @Override
+@Transactional
 public List<StudentResponseDto> getStudentsByInstitution(Long institutionId) {
     // Check if institution exists
     Institutions institution = institutionRepository.findById(institutionId)
@@ -265,6 +269,7 @@ public List<StudentResponseDto> getStudentsByInstitution(Long institutionId) {
             .collect(Collectors.toList());
 }
     @Override
+    @Transactional
     public Page<StudentResponseDto> getStudentsByInstitution(Long institutionId, Pageable pageable) {
         // Verify institution exists
         if (!institutionRepository.existsById(institutionId)) {
@@ -511,6 +516,7 @@ public void deleteStudent(Long studentId) {
 }
 
     @Override
+    @Transactional
     public List<StudentResponseDto> getTop3UnsponsoredUrgentStudents() {
         List<Student> students = studentRepository.findTop3UnsponsoredUrgentStudents();
         return students.stream()
@@ -518,24 +524,28 @@ public void deleteStudent(Long studentId) {
                 .collect(Collectors.toList());
     }
     @Override
+    @Transactional
     public Page<StudentResponseDto> getStudentsByDistrict(Long districtId, Pageable pageable) {
         Page<Student> students = studentRepository.findByInstitution_District_DistrictId(districtId, pageable);
         return students.map(this::convertToStudentResponseDto);
     }
 
     @Override
+    @Transactional
     public Page<StudentResponseDto> getStudentsByThana(Long thanaId, Pageable pageable) {
         Page<Student> students = studentRepository.findByInstitution_Thana_ThanaId(thanaId, pageable);
         return students.map(this::convertToStudentResponseDto);
     }
 
     @Override
+    @Transactional
     public Page<StudentResponseDto> getStudentsByUnion(Long unionId, Pageable pageable) {
         Page<Student> students = studentRepository.findStudentsByUnionId(unionId, pageable);
         return students.map(this::convertToStudentResponseDto);
     }
 
     @Override
+    @Transactional
     public Page<StudentResponseDto> getStudentsByDivision(Long divisionId, Pageable pageable) {
         Page<Student> students = studentRepository.findByInstitution_Division_DivisionId(divisionId, pageable);
         return students.map(this::convertToStudentResponseDto);
