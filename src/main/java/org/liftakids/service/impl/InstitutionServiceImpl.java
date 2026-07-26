@@ -126,6 +126,7 @@ public class InstitutionServiceImpl implements InstitutionService {
 
     // Filtered (no pagination)
     @Override
+    @Transactional
     public List<InstitutionBasicResponse> getByUnionOrArea(Long unionOrAreaId) {
         return institutionRepository.findByUnionOrAreaId(unionOrAreaId)
                 .stream()
@@ -134,6 +135,7 @@ public class InstitutionServiceImpl implements InstitutionService {
     }
 
     @Override
+    @Transactional
     public List<InstitutionResponseDto> getAllInstitutionsList() {
         return institutionRepository.findAll().stream()
                 .map(institution -> modelMapper.map(institution, InstitutionResponseDto.class))
@@ -362,6 +364,7 @@ public class InstitutionServiceImpl implements InstitutionService {
 //    }
 
     @Override
+    @Transactional
     public List<InstitutionResponseDto> getInstitutionsByType(String type) {
         InstitutionType institutionType;
         try {
@@ -405,6 +408,7 @@ public class InstitutionServiceImpl implements InstitutionService {
 //        return null;
 //    }
   @Override
+  @Transactional
     public Page<StudentResponseDto> getAllStudentsWithSponsorsByInstitution(Long institutionId, Pageable pageable) {
         // Verify institution exists
         if (!institutionRepository.existsById(institutionId)) {
@@ -541,6 +545,7 @@ public class InstitutionServiceImpl implements InstitutionService {
 
 
 @Override
+@Transactional
 public List<InstitutionResponseDto> getApprovedInstitutions() {
     return institutionRepository.findByStatus(InstitutionStatus.APPROVED)
             .stream()
