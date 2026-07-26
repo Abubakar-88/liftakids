@@ -1,5 +1,6 @@
 package org.liftakids.service.impl;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.liftakids.dto.unionOrArea.UnionOrAreaDto;
 import org.liftakids.dto.unionOrArea.UnionOrAreaResponseDTO;
@@ -111,6 +112,7 @@ public class UnionOrAreaServiceImpl implements UnionOrAreaService {
 
 
     @Override
+    @Transactional
     public List<UnionOrAreaResponseDTO> getUnionsByThanaId(Long thanaId) {
         return unionOrAreaRepository.findByThana_ThanaId(thanaId).stream()
                 .map(union -> {

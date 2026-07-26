@@ -1,5 +1,6 @@
 package org.liftakids.service.impl;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.liftakids.dto.district.DistrictDto;
 import org.liftakids.dto.district.DistrictResponseDTO;
@@ -49,6 +50,7 @@ public class DistrictServiceImpl implements DistrictService {
     }
 
     @Override
+    @Transactional
     public List<DistrictDto> getAll() {
         return districtRepository.findAll().stream()
                 .map(d -> {
@@ -81,6 +83,7 @@ public class DistrictServiceImpl implements DistrictService {
     }
 
     @Override
+    @Transactional
     public List<DistrictResponseDTO> getDistrictsByDivisionId(Long divisionId) {
         // 1. Batch এ district ids সংগ্রহ করুন
         List<Districts> districts = districtRepository.findByDivisionId(divisionId);
@@ -129,6 +132,7 @@ public class DistrictServiceImpl implements DistrictService {
     }
 
     @Override
+    @Transactional
     public Page<DistrictResponseDTO> getAllDistricts(Pageable pageable) {
         Page<Districts> districts = districtRepository.findAll(pageable);
         return districts.map(district -> modelMapper.map(district, DistrictResponseDTO.class));

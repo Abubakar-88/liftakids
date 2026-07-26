@@ -1,5 +1,6 @@
 package org.liftakids.service.impl;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.liftakids.dto.district.DistrictResponseDTO;
 import org.liftakids.dto.divison.DivisionDto;
@@ -44,6 +45,7 @@ public class DivisionServiceImpl implements DivisionService {
     }
 
     @Override
+    @Transactional
     public List<DivisionResponseDTO> getAll() {
         List<Divisions> divisions = divisionRepository.findAll();
 

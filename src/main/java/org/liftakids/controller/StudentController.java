@@ -10,6 +10,7 @@ import org.liftakids.entity.SponsorshipStatus;
 import org.liftakids.entity.Student;
 import org.liftakids.exception.ResourceNotFoundException;
 import org.liftakids.repositories.SponsorshipRepository;
+import org.liftakids.repositories.StudentRepository;
 import org.liftakids.service.StudentService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,7 +32,7 @@ import java.util.List;
 @RequestMapping("/api/students")
 @RequiredArgsConstructor
 public class StudentController {
-
+    private final StudentRepository studentRepository;
     private final StudentService studentService;
     private final SponsorshipRepository sponsorshipRepository;
     //    @PostMapping("/addStudent")
@@ -284,7 +285,17 @@ public class StudentController {
         return ResponseEntity.ok(studentService.getStudentsByDivision(divisionId, pageable));
     }
 
+    @GetMapping("/debug")
+    public ResponseEntity<String> debug() {
 
+        long count = studentRepository.count();
+        List<Student> students = studentRepository.findAll();
+
+        return ResponseEntity.ok(
+                "COUNT = " + count + "\n" +
+                        "LIST SIZE = " + students.size()
+        );
+    }
 
 
 //    @GetMapping("/unsponsored/urgent")

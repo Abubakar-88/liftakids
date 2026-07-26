@@ -1,5 +1,6 @@
 package org.liftakids.service.impl;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.liftakids.dto.thana.ThanaDto;
@@ -48,6 +49,7 @@ public class ThanaServiceImpl implements ThanaService {
     }
 
     @Override
+    @Transactional
     public List<ThanaResponseDTO> getAll() {
         return thanaRepository.findAll().stream()
                 .map(t -> {
@@ -84,6 +86,7 @@ public class ThanaServiceImpl implements ThanaService {
     }
 
     @Override
+    @Transactional
     public List<ThanaResponseDTO> getThanasByDistrictId(Long districtId) {
         return thanaRepository.findByDistrictIdWithEagerFetch(districtId).stream()
                 .map(thana -> {
