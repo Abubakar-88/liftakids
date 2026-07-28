@@ -24,6 +24,7 @@ public class AdminServiceImpl implements AdminService {
    // private final PasswordEncoder passwordEncoder;
 
     @Override
+    @Transactional
     public AuthResponseDTO login(AdminLoginDTO loginDTO) {
         try {
             SystemAdmin admin = adminRepository.findByUsername(loginDTO.getUsername())
@@ -216,6 +217,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public AdminResponseDTO getAdminById(Long adminId) {
         SystemAdmin admin = adminRepository.findById(adminId)
                 .orElseThrow(() -> new EntityNotFoundException("Admin not found with ID: " + adminId));
@@ -223,6 +225,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public AdminResponseDTO getAdminByUsername(String username) {
         SystemAdmin admin = adminRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("Admin not found with username: " + username));
@@ -230,6 +233,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public List<AdminResponseDTO> getAllAdmins() {
         return adminRepository.findAll().stream()
                 .map(this::convertToResponseDTO)
@@ -237,6 +241,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public List<AdminResponseDTO> getActiveAdmins() {
         return adminRepository.findByActiveTrue().stream()
                 .map(this::convertToResponseDTO)
@@ -244,6 +249,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public List<AdminResponseDTO> getInactiveAdmins() {
         return adminRepository.findByActiveFalse().stream()
                 .map(this::convertToResponseDTO)
@@ -294,6 +300,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public AdminResponseDTO updateProfile(Long adminId, AdminDTO adminDTO) {
         return updateAdmin(adminId, adminDTO, adminId); // Self-update
     }
