@@ -43,6 +43,7 @@ public class UnionOrAreaServiceImpl implements UnionOrAreaService {
     }
 
     @Override
+    @Transactional
     public List<UnionOrAreaResponseDTO> getAll() {
         return unionOrAreaRepository.findAll().stream()
                 .map(u -> {
@@ -54,6 +55,7 @@ public class UnionOrAreaServiceImpl implements UnionOrAreaService {
     }
 
     @Override
+    @Transactional
     public Page<UnionOrAreaResponseDTO> getAllUnions(Pageable pageable) {
         return unionOrAreaRepository.findAll(pageable)
                 .map(this::convertToDto);
@@ -83,6 +85,7 @@ public class UnionOrAreaServiceImpl implements UnionOrAreaService {
     }
 
     @Override
+    @Transactional
     public Page<UnionOrAreaResponseDTO> getUnionsByThanaId(Long thanaId, Pageable pageable) {
         Page<UnionOrArea> unionsPage = unionOrAreaRepository.findByThana_ThanaId(thanaId, pageable);
 

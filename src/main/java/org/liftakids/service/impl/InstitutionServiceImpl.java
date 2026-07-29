@@ -104,6 +104,8 @@ public class InstitutionServiceImpl implements InstitutionService {
 
         return dto;
     }
+    @Override
+    @Transactional
     public LoginResponseDto login(LoginRequestDto loginRequest) {
         Optional<Institutions> institutionOpt = institutionRepository.findByEmail(loginRequest.getEmail());
 
@@ -113,7 +115,7 @@ public class InstitutionServiceImpl implements InstitutionService {
 
         Institutions institution = institutionOpt.get();
 
-        // Password matching (plain text comparison - পরে encryption add করবেন)
+        // Password matching (plain text comparison )
         if (!institution.getPassword().equals(loginRequest.getPassword())) {
             return new LoginResponseDto(false, "Invalid password", null);
         }
@@ -348,6 +350,7 @@ public class InstitutionServiceImpl implements InstitutionService {
     }
 
     @Override
+    @Transactional
     public void deleteInstitution(Long id) {
         if (!institutionRepository.existsById(id)) {
             throw new RuntimeException("Institution not found with id " + id);

@@ -125,6 +125,7 @@ public class SponsorshipServiceImpl implements SponsorshipService {
     }
 
     @Override
+    @Transactional
     public Page<SponsorshipResponseDto> searchSponsorships(SponsorshipSearchRequest request, Pageable pageable) {
         // Convert string enums to actual enum values
         SponsorshipStatus status = request.getStatus() != null ?
@@ -164,6 +165,8 @@ public class SponsorshipServiceImpl implements SponsorshipService {
     }
 
     // Optimized version
+    @Override
+    @Transactional
     public List<SponsorshipResponseDto> getPendingPaymentSponsorshipsOptimized(Long institutionId) {
         List<Sponsorship> pendingSponsorships = sponsorshipRepository
                 .findPendingPaymentSponsorships(institutionId);
@@ -173,7 +176,8 @@ public class SponsorshipServiceImpl implements SponsorshipService {
                 .collect(Collectors.toList());
     }
 
-
+@Override
+@Transactional
     public Map<String, Long> getSponsorshipStatusCounts(Long institutionId) {
         List<Sponsorship> allSponsorships = sponsorshipRepository
                 .findByStudentInstitutionId(institutionId);
@@ -250,6 +254,7 @@ private SponsorshipResponseDto sponsorConvertToDto(Sponsorship sponsorship) {
     }
 
     @Override
+    @Transactional
     public List<SponsorshipResponseDto> getOverdueSponsorships() {
         return sponsorshipRepository.findByStatusAndPaidUpToBeforeOrPaidUpToIsNull(
                         SponsorshipStatus.ACTIVE,
@@ -359,6 +364,7 @@ private SponsorshipResponseDto convertToResDto(Sponsorship sponsorship) {
     }
 
     @Override
+    @Transactional
     public List<SponsorshipResponseDto> getSponsorshipsByDonorId(Long donorId) {
         List<Sponsorship> sponsorships = sponsorshipRepository.findByDonorDonorId(donorId);
         return sponsorships.stream()
@@ -366,6 +372,7 @@ private SponsorshipResponseDto convertToResDto(Sponsorship sponsorship) {
                 .collect(Collectors.toList());
     }
     @Override
+    @Transactional
     public Page<SponsorshipResponseDto> getSponsorshipsByDonorId(Long donorId, Pageable pageable) {
         Page<Sponsorship> sponsorships = sponsorshipRepository.findByDonorDonorId(donorId, pageable);
         return sponsorships.map(this::sponsorConvertToDto);

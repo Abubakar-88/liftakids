@@ -45,6 +45,7 @@ public class InstitutionController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
     }
+
     @GetMapping("/by-union/{unionOrAreaId}")
     public ResponseEntity<?> getInstitutionsByUnion(
             @PathVariable Long unionOrAreaId) {
