@@ -115,14 +115,43 @@ public class InstitutionServiceImpl implements InstitutionService {
 
         Institutions institution = institutionOpt.get();
 
-        // Password matching (plain text comparison )
+        // Check password first (so we don't reveal status to someone who doesn't know the password)
         if (!institution.getPassword().equals(loginRequest.getPassword())) {
             return new LoginResponseDto(false, "Invalid password", null);
+        }
+
+        // Now check the institution status
+        InstitutionStatus status = institution.getStatus();
+
+        if (status == InstitutionStatus.PENDING) {
+            return new LoginResponseDto(false,
+                    "Your registration is still pending approval. You will be able to login once approved.", null);
+        }
+
+        if (status == InstitutionStatus.REJECTED) {
+            String reason = institution.getRejectionReason() != null ?
+                    " Reason: " + institution.getRejectionReason() : "";
+            return new LoginResponseDto(false,
+                    "Your registration has been rejected." + reason, null);
+        }
+
+        if (status == InstitutionStatus.SUSPENDED) {
+            String reason = institution.getSuspendedReason() != null ?
+                    " Reason: " + institution.getSuspendedReason() : "";
+            return new LoginResponseDto(false,
+                    "Your account has been suspended." + reason, null);
+        }
+
+        // Only allow login if status is APPROVED or ACTIVE
+        if (status != InstitutionStatus.APPROVED && status != InstitutionStatus.ACTIVE) {
+            return new LoginResponseDto(false,
+                    "Your account is not active. Please contact support.", null);
         }
 
         InstitutionResponseDto institutionDto = convertToDto(institution);
         return new LoginResponseDto(true, "Login successful", institutionDto);
     }
+
 
 
 
