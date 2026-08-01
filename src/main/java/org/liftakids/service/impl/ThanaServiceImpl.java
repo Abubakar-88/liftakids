@@ -147,6 +147,7 @@ public class ThanaServiceImpl implements ThanaService {
 //                .collect(Collectors.toList());
 //    }
     @Override
+    @Transactional
     public ThanaResponseDTO updateThana(Long thanaId, ThanaDto thanaRequestDTO) {
         // 1. Fetch the existing thana with complete relationships
         Thanas existingThana = thanaRepository.findWithDivisionById(thanaId)

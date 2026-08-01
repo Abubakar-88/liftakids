@@ -55,6 +55,7 @@ public class InstitutionServiceImpl implements InstitutionService {
     private static final Logger log = LoggerFactory.getLogger(InstitutionServiceImpl.class.getName());
 
     @Override
+    @Transactional
     public InstitutionResponseDto createInstitution(InstitutionRequestDto requestDto) {
         // Fetch all location entities
         Divisions division = divisionRepository.findById(requestDto.getDivisionId())
