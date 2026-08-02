@@ -82,7 +82,7 @@ public class SponsorshipServiceImpl implements SponsorshipService {
         sponsorship.setStatus(SponsorshipStatus.PENDING_PAYMENT);
         sponsorship.setPaymentMethod(request.getPaymentMethod());
         sponsorship.setTotalPaidAmount(BigDecimal.ZERO);
-        sponsorship.setSponsorStartDate(LocalDate.now());
+        sponsorship.setSponsorStartDate(adjustedStartDate);
         sponsorship.setLastPaymentDate(null);
         sponsorship.setPaidUpTo(null);
         sponsorship.setPayments(new ArrayList<>());
