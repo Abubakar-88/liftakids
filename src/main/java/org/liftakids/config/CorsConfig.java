@@ -13,7 +13,8 @@ public class CorsConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOrigins(
                         "https://liftakid.org",
-                        "https://www.liftakid.org"
+                        "https://www.liftakid.org",
+                        "https://staging.liftakid.org"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE","PATCH", "OPTIONS")
                 .allowedHeaders("*")

@@ -164,10 +164,13 @@ public class PaymentServiceImpl implements PaymentService {
         LocalDate adjustedEndDate = endDate.withDayOfMonth(endDate.lengthOfMonth());
 
         // Validate dates are within sponsorship period (using adjusted dates)
-        if (adjustedStartDate.isBefore(sponsorship.getSponsorStartDate())) {
+//        if (adjustedStartDate.isBefore(sponsorship.getSponsorStartDate())) {
+//            throw new BusinessException("Cannot pay for dates before sponsorship start");
+//        }
+        if (sponsorship.getStatus() != SponsorshipStatus.PENDING_PAYMENT
+                && adjustedStartDate.isBefore(sponsorship.getSponsorStartDate())) {
             throw new BusinessException("Cannot pay for dates before sponsorship start");
         }
-
         // Payment must be positive
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessException("Payment amount must be positive");
