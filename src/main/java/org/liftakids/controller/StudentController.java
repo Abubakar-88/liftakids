@@ -35,10 +35,7 @@ public class StudentController {
     private final StudentRepository studentRepository;
     private final StudentService studentService;
     private final SponsorshipRepository sponsorshipRepository;
-    //    @PostMapping("/addStudent")
-//    public ResponseEntity<StudentResponseDto> createStudent(@Valid @RequestBody StudentRequestDto requestDto) {
-//        return new ResponseEntity<>(studentService.createStudent(requestDto), HttpStatus.CREATED);
-//    }
+
     @PostMapping(value = "/addStudent", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<StudentResponseDto> createStudent(
             @RequestPart("studentData") @Valid StudentRequestDto requestDto,
@@ -49,14 +46,7 @@ public class StudentController {
             throw new RuntimeException("Failed to process image", e);
         }
     }
-//    @PutMapping("/{studentId}")
-//    public ResponseEntity<StudentResponseDto> updateStudent(
-//            @PathVariable Long studentId,
-//            @Valid @RequestBody StudentUpdateRequestDTO updateRequest) {
-//
-//        StudentResponseDto updatedStudent = studentService.updateStudent(studentId, updateRequest);
-//        return ResponseEntity.ok(updatedStudent);
-//    }
+
 
     @PutMapping(value = "/updateStudent/{studentId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<StudentResponseDto> updateStudent(
