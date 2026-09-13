@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.Where;
+import org.liftakids.entity.InstituteManage.InstituteClass;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -66,6 +67,10 @@ public class Student {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StudentStatus status = StudentStatus.ACTIVE;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "institute_class_id")
+    private InstituteClass instituteClass;
 
     @CreationTimestamp
     @Column(name = "created_date", updatable = false)
